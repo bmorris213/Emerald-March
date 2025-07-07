@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-05-2025
+# 07-07-2025
 # Brian Morris
 
 extends Node
@@ -78,6 +78,7 @@ func _attach_menu(new_menu : Menu):
 	_menu_stack.append(new_menu)
 	_active_menu = new_menu
 	new_menu.visible = true
+	new_menu.move_selector_to(0)
 
 # open menu
 # open up a default menu
@@ -131,6 +132,7 @@ func cancel():
 	# cancel closes dialogue or base-level menus
 	if is_speaking() or _menu_stack.size() == 1:
 		close_menus()
+		return
 	
 	_collapse_menu(_active_menu)
 	_menu_stack.pop_front()
@@ -177,6 +179,21 @@ func highlight_quick_key(direction : Vector2i):
 # returns true if any menu is currently open
 func viewing_menu() -> bool:
 	return not _menu_stack.is_empty()
+
+# fade in idle
+# make the hud show up slowly
+func fade_in_idle(progress : float):
+	var a := progress * (0.5 / Constants.IDLE_INITIAL_DELAY)
+	_canvas.visible = true
+	_canvas.find_child(Constants.HEADER_NAME).modulate.a = a
+	_canvas.find_child(Constants.FOOTER_NAME).modulate.a = a
+
+# stop idle
+# undo idle fade in
+func stop_idle():
+	_canvas.find_child(Constants.HEADER_NAME).modulate.a = 1.0
+	_canvas.find_child(Constants.FOOTER_NAME).modulate.a = 1.0
+	_canvas.visible = false
 
 # dialogue management
 

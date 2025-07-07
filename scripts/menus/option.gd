@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-02-2025
+# 07-07-2025
 # Brian Morris
 
 extends Node
@@ -9,15 +9,15 @@ extends Node
 
 class_name Option
 
-var _option_label : Label
-var _callable : Callable
+var option_label : Label
+var callable : Callable
 var temp : bool
 
 # init
 # constructor for options
-func _init(label : Label = null, callable : Callable = _default_function, temporary : bool = false):
-	self._option_label = label
-	self._callable = callable
+func _init(label : Label = null, function : Callable = _default_function, temporary : bool = false):
+	self.option_label = label
+	self.callable = function
 	self.temp = temporary
 
 # default function

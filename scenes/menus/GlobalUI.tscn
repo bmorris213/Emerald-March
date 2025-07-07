@@ -2,11 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="1_kdjdg"]
 [ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="2_qvajt"]
-[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="3_2vusy"]
 [ext_resource type="PackedScene" uid="uid://dx5la856bxawq" path="res://scenes/menus/DialogueBox.tscn" id="3_4gmpg"]
-[ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="4_oabfo"]
+[ext_resource type="FontFile" uid="uid://nln3rhxol8vf" path="res://assets/fonts/Orange Kid.otf" id="3_c8jiv"]
 [ext_resource type="PackedScene" uid="uid://bpakvvgy2nq1q" path="res://scenes/menus/PauseMenu.tscn" id="5_5mii0"]
-[ext_resource type="Script" path="res://scenes/menus/option.gd" id="6_bwx5l"]
+[ext_resource type="PackedScene" uid="uid://cjdta2do0gcy6" path="res://scenes/menus/QuickMenu.tscn" id="6_ehn1o"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_puine"]
+font = ExtResource("3_c8jiv")
+font_size = 80
 
 [node name="GlobalUI" type="CanvasLayer"]
 
@@ -80,7 +83,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-label_settings = ExtResource("2_qvajt")
+label_settings = SubResource("LabelSettings_puine")
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -93,78 +96,19 @@ visible = false
 layout_mode = 1
 offset_top = -4.0
 offset_bottom = -4.0
-script = ExtResource("3_2vusy")
 
-[node name="QuickMenu" type="Control" parent="ScreenOrganizer/Viewport"]
+[node name="QuickMenu" parent="ScreenOrganizer/Viewport" instance=ExtResource("6_ehn1o")]
+visible = false
 layout_mode = 1
-anchor_left = 0.35
-anchor_top = 0.1
-anchor_right = 0.65
-anchor_bottom = 0.55
-script = ExtResource("3_2vusy")
-
-[node name="Options" type="Control" parent="ScreenOrganizer/Viewport/QuickMenu"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Center" type="TextureRect" parent="ScreenOrganizer/Viewport/QuickMenu/Options"]
-layout_mode = 0
-offset_left = 161.8
-offset_top = 53.0
-offset_right = 225.8
-offset_bottom = 117.0
-texture = ExtResource("1_kdjdg")
-script = ExtResource("6_bwx5l")
-
-[node name="Top" type="TextureRect" parent="ScreenOrganizer/Viewport/QuickMenu/Options"]
-layout_mode = 0
-offset_left = 162.8
-offset_top = -17.0
-offset_right = 226.8
-offset_bottom = 47.0
-texture = ExtResource("4_oabfo")
-script = ExtResource("6_bwx5l")
-
-[node name="Right" type="TextureRect" parent="ScreenOrganizer/Viewport/QuickMenu/Options"]
-layout_mode = 0
-offset_left = 234.8
-offset_top = 53.0
-offset_right = 298.8
-offset_bottom = 117.0
-texture = ExtResource("4_oabfo")
-script = ExtResource("6_bwx5l")
-
-[node name="Bottom" type="TextureRect" parent="ScreenOrganizer/Viewport/QuickMenu/Options"]
-layout_mode = 0
-offset_left = 161.8
-offset_top = 123.0
-offset_right = 225.8
-offset_bottom = 187.0
-texture = ExtResource("4_oabfo")
-script = ExtResource("6_bwx5l")
-
-[node name="Left" type="TextureRect" parent="ScreenOrganizer/Viewport/QuickMenu/Options"]
-layout_mode = 0
-offset_left = 88.8
-offset_top = 52.0
-offset_right = 152.8
-offset_bottom = 116.0
-texture = ExtResource("4_oabfo")
-script = ExtResource("6_bwx5l")
-
-[node name="Selector" type="ColorRect" parent="ScreenOrganizer/Viewport/QuickMenu"]
-layout_mode = 0
-offset_left = 161.8
-offset_top = 53.0
-offset_right = 225.8
-offset_bottom = 117.0
-color = Color(1, 1, 0.486275, 0.341176)
 
 [node name="Footer" type="ColorRect" parent="ScreenOrganizer"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 color = Color(0, 0, 0, 1)
+
+[node name="PartyDisplay" type="HBoxContainer" parent="ScreenOrganizer/Footer"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.15
+anchor_right = 0.85
+anchor_bottom = 1.0

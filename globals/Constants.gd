@@ -18,6 +18,7 @@ const MENU_MAX_MAX_DELAY := 0.35 # Initial delay before repeat
 const MENU_MIN_DELAY := 0.07 # Fastest speed menu selector moves
 const MENU_QUIT_DELAY := 3 # how long to hold down the quit before it exits
 const QUICK_ACTION_DELAY := 1.2 # how long to animate a quick action event
+const IDLE_INITIAL_DELAY := 1.2 # how long it takes until idle screen
 
 # scene references
 enum SCENE_ID {
@@ -60,6 +61,8 @@ const DIALOGUE_BOX_TITLE_NAME := "Title"
 const DIALOGUE_BOX_DESCRIPTION_NAME := "Text"
 const TOOLTIP_NAME := "ToolTip"
 const QUIT_WARNING_NAME := "QuittingWarning"
+const HEADER_NAME := "Header"
+const FOOTER_NAME := "Footer"
 
 # menu control values
 const MIN_QUIT_WARNING_OPACITY := 0.4

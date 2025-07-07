@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-05-2025
+# 07-07-2025
 # Brian Morris
 
 extends Node
@@ -13,6 +13,7 @@ class_name ControlManager
 var _input_locked := false
 var _quit_timer := 0.0
 var _trying_to_quit := false
+var _idle_timer := 0.0
 
 # menu control details
 var _menu_direction := Vector2i.ZERO
@@ -50,7 +51,12 @@ func process(delta : float):
 
 # handle input
 # main control delegation loop
-func handle_input():
+func handle_input(delta : float):
+	# quick check for no longer being idle
+	if _idle_timer != 0.0 and Input.is_anything_pressed():
+		_idle_timer = 0.0
+		GameManager.menu_manager.stop_idle()
+	
 	# accommodate input lock
 	if _input_locked:
 		return
@@ -109,6 +115,7 @@ func handle_input():
 		else:
 			if Input.is_action_just_pressed("cancel"):
 				GameManager.menu_manager.cancel()
+				return
 		
 		if Input.is_action_just_pressed("select"):
 			GameManager.menu_manager.select()
@@ -191,6 +198,13 @@ func handle_input():
 	elif Input.is_action_just_pressed("right"):
 		_last_direction = Vector2i.RIGHT
 		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
+	
+	# active screen idle timer
+	if not Input.is_anything_pressed():
+		_idle_timer += delta
+		
+		if _idle_timer >= Constants.IDLE_INITIAL_DELAY and _idle_timer <= Constants.IDLE_INITIAL_DELAY * 3:
+			GameManager.menu_manager.fade_in_idle(_idle_timer - Constants.IDLE_INITIAL_DELAY)
 
 # will continue move
 # called once the mover stops at a new tile

@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-02-2025
+# 07-07-2025
 # Brian Morris
 
 extends Control
@@ -11,9 +11,9 @@ class_name Menu
 
 # base menu information
 var _selected_index := 0
-var _h_locked := false
-var _v_locked := false
-var _row_size := 0
+@export var h_locked := false
+@export var v_locked := false
+@export var row_size := 0
 
 # game objects
 var _options : Array[Option] = []
@@ -21,7 +21,7 @@ var _option_container : Node
 
 # export variables
 var _selector_icon : Node
-var _offset := Vector2(-20, 0)
+@export var offset := Vector2(-20, 0)
 
 # ready
 # called once on startup of the scene
@@ -38,47 +38,34 @@ func _ready():
 		for child in children:
 			if child is Option:
 				_options.append(child as Option)
-	
-	# if all elements are present, we can set the offset of the selector
-	if _selector_icon and _option_container and _options and _options.size() > 0:
-		_offset = _selector_icon.global_position - _options[0].global_position
-	
-	# try to establish row size
-	if _options and _options.size() > 0:
-		var h_counter = 0
-		var first_height = _options[0].global_position.y
-		for option in _options:
-			h_counter += 1
-			if option.global_position.y != first_height:
-				break
-		_row_size = h_counter
 
 # lock movement
 # disables selector movement along one or both axis
 func lock_movement(lock_v : bool = false, lock_h : bool = false):
-	_v_locked = lock_v
-	_h_locked = lock_h
+	v_locked = lock_v
+	h_locked = lock_h
 
 # update selection
 # used to change UI elements to update a new selection
 func _update_selection():
 	if _selector_icon and _selected_index < _options.size() and _selected_index >= 0:
-		_selector_icon.global_position = _options[_selected_index].global_position + _offset
+		_selector_icon.global_position = _options[_selected_index].global_position + offset
+		_selector_icon.rotation = _options[_selected_index].rotation
 
 # move selector
 # function to change the menu selection
 func move_selector(direction : Vector2i):
 	var amount = 1
 	if direction == Vector2i.UP or direction == Vector2i.DOWN:
-		amount = _row_size * direction.y
-		if _v_locked:
+		amount = row_size * direction.y
+		if v_locked:
 			amount = 0
 	elif direction == Vector2i.LEFT or direction == Vector2i.RIGHT:
 		amount = direction.x
-		if _h_locked:
+		if h_locked:
 			amount = 0
 	_selected_index = (_selected_index + amount + _options.size()) % _options.size()
-	_update_selection()
+	call_deferred("_update_selection")
 
 # move selector to
 # manually choose a selection from the menu
@@ -87,7 +74,7 @@ func move_selector_to(selection : int):
 		return
 	
 	_selected_index = selection
-	_update_selection()
+	call_deferred("_update_selection")
 
 # on select
 # call the function on the currently chosen option
@@ -97,7 +84,7 @@ func on_select():
 	if _selected_index >= _options.size():
 		return
 	
-	_options[_selected_index].function.call()
+	_options[_selected_index].callable.call()
 
 # create option
 # makes a new label option using choice information

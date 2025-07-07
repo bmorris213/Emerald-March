@@ -58,7 +58,7 @@ func setup_global_scene(root : Node):
 # called once per frame
 func _process(delta : float):
 	# ask ControlManager to handle input and take action
-	control_manager.handle_input()
+	control_manager.handle_input(delta)
 	
 	# pass delta to managers
 	control_manager.process(delta)
