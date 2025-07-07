@@ -183,7 +183,7 @@ func viewing_menu() -> bool:
 # fade in idle
 # make the hud show up slowly
 func fade_in_idle(progress : float):
-	var a := progress * (0.5 / Constants.IDLE_INITIAL_DELAY)
+	var a := progress * (1 / Constants.IDLE_FADE_IN)
 	_canvas.visible = true
 	_canvas.find_child(Constants.HEADER_NAME).modulate.a = a
 	_canvas.find_child(Constants.FOOTER_NAME).modulate.a = a

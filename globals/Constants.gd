@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-05-2025
+# 07-07-2025
 # Brian Morris
 
 # Constants
@@ -18,7 +18,8 @@ const MENU_MAX_MAX_DELAY := 0.35 # Initial delay before repeat
 const MENU_MIN_DELAY := 0.07 # Fastest speed menu selector moves
 const MENU_QUIT_DELAY := 3 # how long to hold down the quit before it exits
 const QUICK_ACTION_DELAY := 1.2 # how long to animate a quick action event
-const IDLE_INITIAL_DELAY := 1.2 # how long it takes until idle screen
+const IDLE_INITIAL_DELAY := 3.4 # how long it takes until idle screen
+const IDLE_FADE_IN := 1.2 # how long it takes for the idle screen to fade in
 
 # scene references
 enum SCENE_ID {
@@ -74,7 +75,17 @@ const TYPING_SPEED := {
 }
 const RAPID_TYPING_MULTIPLIER := 2.75
 
-# overworld information
+# interactables
+const TILESET_INTERACTABLE_TYPE := "interact_type"
+enum INTERACT_TYPES {
+	point_of_interest,
+	container,
+	entrance,
+	npc
+}
+const TILESET_INTERACTABLE_TARGET := "interaction_id"
+const TILESET_INTERACTABLE_DATA := "interact_data"
+
 enum REGIONS {
 	Cel,
 	Höf,

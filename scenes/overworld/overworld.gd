@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-03-2025
+# 07-07-2025
 # Brian Morris
 
 extends Node2D
@@ -14,12 +14,17 @@ var _state_machine
 
 # tilemap node references
 @onready var _collision_layer := $CollisionLayer
+@onready var _location_layer := $LocationLayer
 
 # values for player
 var is_walking := false # determines sprite animation to play
 var _previous_walking_state := false
 var steps := 0
 var _step_goal : int
+
+# time values
+var _current_time := 0.0
+var _current_day := 0
 
 # test locations
 var locations = { # lets just call these INTERACTABLES, since thats the only OBJECT style detail on the world map
@@ -74,12 +79,13 @@ func _ready():
 	_player.teleport(_player.global_position)
 	_player.move_speed = 4
 	_set_random_goal()
+	_collision_layer.visible = false
 
 # process
 # called once per frame
 func _process(_delta):
 	# fix player sprite to current position of mover
-	_player.global_position = _player._current_position
+	_player.global_position = _player.get_location()
 	
 	# update sprite animation if walking value changes
 	if is_walking != _previous_walking_state:
@@ -140,20 +146,23 @@ func _set_random_goal():
 	var r = GameManager.random_generator.randf()
 	_step_goal = lerp(6, 15, r)
 
-func try_select():
-	if 1 == 1:
-		print("select")
-		return
+# get interact data
+# returns any interaction custom data at a certain tile position
+func get_interact_data() -> Dictionary:
+	var result := {}
 	
-	var target = _player.get_location()
-	if target not in locations:
-		var lines = [{"name": "Searching", "text": "You find nothing of note here...", "choices": []}]
-		GameManager.menu_manager.start_dialogue(lines)
-		return
+	# check on top of player
+	var grid_pos = _collision_layer.local_to_map(_player.global_position)
+	var cell_data = _location_layer.get_cell_tile_data(grid_pos)
 	
-	var location = locations[target]
-	var new_line := { "name": location.name, "text": location.description, "choices": [
-		{"text": "Leave", "function": func(): pass},
-		{"text": "Enter", "function": location.on_enter}
-	]}
-	GameManager.menu_manager.start_dialogue([new_line])
+	# check in front of player
+	if not cell_data or not cell_data.has_custom_data(Constants.TILESET_INTERACTABLE_TYPE):
+			grid_pos += Vector2i(_animator.get("parameters/Idle/blend_position"))
+			cell_data = _location_layer.get_cell_tile_data(grid_pos)
+	
+	# find data
+	if cell_data and cell_data.has_custom_data(Constants.TILESET_INTERACTABLE_TYPE):
+		for key in cell_data.get_custom_data_keys():
+			result[key] = cell_data.get_custom_data(key)
+	
+	return result

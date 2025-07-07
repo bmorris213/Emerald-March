@@ -54,7 +54,57 @@ func at_new_tile(_position : Vector2):
 # select
 # called when the select action is called during active control scheme
 func try_select():
-	_current_scene.try_select()
+	var data = _current_scene.get_interact_data()
+	
+	if data == {}:
+		_read_data()
+	
+	var select_type = data.get(Constants.TILESET_INTERACTABLE_TYPE)
+	var select_target = data.get(Constants.TILESET_INTERACTABLE_TARGET)
+	var select_data = data.get(Constants.TILESET_INTERACTABLE_DATA)
+	
+	var string_array = Constants.INTERACT_TYPES.keys()
+	var match_a = string_array[Constants.INTERACT_TYPES.point_of_interest]
+	var match_b = string_array[Constants.INTERACT_TYPES.container]
+	var match_c = string_array[Constants.INTERACT_TYPES.entrance]
+	var match_d = string_array[Constants.INTERACT_TYPES.npc]
+	
+	match select_type:
+		match_a:
+			_read_data(select_target, select_data)
+		match_b:
+			_open_container(select_target, select_data)
+		match_c:
+			_take_entrance(select_target, select_data)
+		match_d:
+			_speak_to(select_target, select_data)
+
+# read data
+# interaction with a point of interest to just narate something
+func _read_data(target : String = "", data : String = ""):
+	print("point of interest")
+	if target == "" and data == "":
+		print("No problem here.")
+	
+	print(target, data)
+
+# open container
+# interaction with a container to potentially gain items
+func _open_container(target : String, data : String):
+	print("container")
+	print(target, data)
+
+# take entrance
+# use an interactable to initiate a scene transition
+func _take_entrance(target : String, data : String):
+	print("entrance")
+	print(target, data)
+
+# speak to
+# interact with an npc, initiating a dialogue tree
+func _speak_to(target : String, data : String):
+	print("npc")
+	print(target, data)
 
 # call action
 # uses a party ability within the active scene
