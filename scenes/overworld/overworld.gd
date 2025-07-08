@@ -1,4 +1,4 @@
-# Rise of the Dragon King
+# Emerald March
 # 07-08-2025
 # Brian Morris
 
@@ -43,7 +43,7 @@ var locations = [
 	),
 	Interactable.new(
 		Vector2i(14,10), "First Town", "A small rural village in the hills.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "town",\
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "location",\
 			"target_entrance" : ""}
 	),
 	Interactable.new(
@@ -66,7 +66,7 @@ var locations = [
 	),
 	Interactable.new(
 		Vector2i(20,20), "Hidden Village", "A small rural village in the hills.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "town",\
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "location",\
 			"target_entrance" : ""}, true
 	),
 	Interactable.new(
@@ -83,7 +83,8 @@ var locations = [
 			"key" : "key"}, false, true
 	),
 	Interactable.new(
-		Vector2i(10,10)
+		Vector2i(10,10), "Mother", "This is where you came from, just now...",
+		Interactable.INTERACT_TYPES.npc
 	)
 ]
 

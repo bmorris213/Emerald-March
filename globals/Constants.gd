@@ -1,4 +1,4 @@
-# Rise of the Dragon King
+# Emerald March
 # 07-08-2025
 # Brian Morris
 
@@ -8,7 +8,7 @@
 class_name Constants
 
 # game management
-const RNG_SEED := "G14O15D16O17T180h1a2s3h4H5A6S7H8g9o10d11o12t13"
+const RNG_SEED := "test"
 
 # control scheme management
 const MIN_INTERRUPT_DURATION := 0.1
@@ -26,7 +26,7 @@ enum SCENE_ID {
 	main_menu,
 	overworld,
 	battle,
-	town,
+	location,
 	dungeon,
 	control_manager,
 	file_manager,
@@ -38,7 +38,7 @@ const SCENES := {
 	SCENE_ID.main_menu: "res://scenes/menus/main_menu.tscn",
 	SCENE_ID.overworld: "res://scenes/overworld/overworld.tscn",
 	SCENE_ID.battle: "res://scenes/battle/battle.tscn",
-	SCENE_ID.town: "res://scenes/town/town.tscn",
+	SCENE_ID.location: "res://scenes/location/location.tscn",
 	SCENE_ID.dungeon: "res://scenes/dungeon/dungeon.tscn",
 	SCENE_ID.control_manager: "res://scripts/managers/ControlManager.gd",
 	SCENE_ID.file_manager: "res://scripts/managers/FileManager.gd",
