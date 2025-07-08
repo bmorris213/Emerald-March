@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-07-2025
+# 07-08-2025
 # Brian Morris
 
 # Constants
@@ -75,17 +75,9 @@ const TYPING_SPEED := {
 }
 const RAPID_TYPING_MULTIPLIER := 2.75
 
-# interactables
-const TILESET_INTERACTABLE_TYPE := "interact_type"
-enum INTERACT_TYPES {
-	point_of_interest,
-	container,
-	entrance,
-	npc
-}
-const TILESET_INTERACTABLE_TARGET := "interaction_id"
-const TILESET_INTERACTABLE_DATA := "interact_data"
+const OVERWORLD_EMPTY_TILE := Interactable.TILESET_INTERACTABLE_SPRITES[Interactable.INTERACT_TYPES.empty]
 
+# overworld generation
 enum REGIONS {
 	Cel,
 	Höf,

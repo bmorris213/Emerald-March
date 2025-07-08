@@ -55,6 +55,9 @@ func _update_selection():
 # move selector
 # function to change the menu selection
 func move_selector(direction : Vector2i):
+	if _options.size() == 0:
+		return
+	
 	var amount = 1
 	if direction == Vector2i.UP or direction == Vector2i.DOWN:
 		amount = row_size * direction.y

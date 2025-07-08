@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-07-2025
+# 07-08-2025
 # Brian Morris
 
 extends Node2D
@@ -13,6 +13,8 @@ var _animator
 var _state_machine
 
 # tilemap node references
+@onready var _ground_layer := $GroundLayer
+@onready var _terrain_layer := $TerrainLayer
 @onready var _collision_layer := $CollisionLayer
 @onready var _location_layer := $LocationLayer
 
@@ -22,54 +24,77 @@ var _previous_walking_state := false
 var steps := 0
 var _step_goal : int
 
-# time values
-var _current_time := 0.0
-var _current_day := 0
+# terrain values
+
+# interactable references stored by location
+var _locations := {}
 
 # test locations
-var locations = { # lets just call these INTERACTABLES, since thats the only OBJECT style detail on the world map
-	Vector2i(14,10): {
-		"name": "Town 1",
-		"description": "You approach the small village in the hills",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Town 1", "text": "You enter the tutorial town..."}])
-	},
-	Vector2i(20,20): {
-		"name": "Forest Dungeon",
-		"description": "You find a temple in the woods.",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Forest Dungeon", "text": "You enter the forest dungeon..."}])
-	},
-	Vector2i(25,15): {
-		"name": "Mountain Dungeon",
-		"description": "After a long journey, you find a temple in the mountains.",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Mountain Dungeon", "text": "You enter the Mountain Dungeon..."}])
-	},
-	Vector2i(28, 10): {
-		"name": "Town 2",
-		"description": "You approach the walled town against the cliffside.",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Town 2", "text": "You enter the second town..."}])
-	},
-	Vector2i(35, 9): {
-		"name": "Far Town",
-		"description": "How did you get here? This shouldn't exist.",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Far Town", "text": "Sorry, but this doesn't exist..."}])
-	},
-	Vector2i(12, 16): {
-		"name": "Secret Location",
-		"description": "After wandering the forest, you stumble into a quaint grove.",
-		"on_enter": func(): GameManager.menu_manager.start_dialogue(
-			[{"name" : "Secret Location", "text": "You enter the clearing in the woods..."}])
-	}
-}
+var locations = [
+	Interactable.new(
+		Vector2i(7,14), "West Entrance", "The path continues from here around the entire globe.",
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "overworld",\
+			"target_entrance" : "East Entrance"}
+	),
+	Interactable.new(
+		Vector2i(38,14), "East Entrance", "The path continues from here around the entire globe.",
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "overworld",\
+			"target_entrance" : "West Entrance"}
+	),
+	Interactable.new(
+		Vector2i(14,10), "First Town", "A small rural village in the hills.",
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "town",\
+			"target_entrance" : ""}
+	),
+	Interactable.new(
+		Vector2i(28,10), "Cave Tunnel", "The entrance to a cave is visible here.",
+		Interactable.INTERACT_TYPES.switch, { "target_action" : "teleport",\
+			"target_data" : Vector2i(30,10)}
+	),
+	Interactable.new(
+		Vector2i(12,13), "Forest Clearing", "A peaceful clearing in the woods.",
+		Interactable.INTERACT_TYPES.point_of_interest, {}
+	),
+	Interactable.new(
+		Vector2i(34,15), "Cliff Edge", "This cliff overlooks the entirety of the forest below.",
+		Interactable.INTERACT_TYPES.point_of_interest, {}
+	),
+	Interactable.new(
+		Vector2i(25,15), "Mountain Dungeon", "Deep in the mountain woods can be found sacred ruins.",
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "dungeon",\
+			"target_entrance" : ""}
+	),
+	Interactable.new(
+		Vector2i(20,20), "Hidden Village", "A small rural village in the hills.",
+		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "town",\
+			"target_entrance" : ""}, true
+	),
+	Interactable.new(
+		Vector2i(12,16), "Hidden Chest", "In a hollow in a tree there is a small pouch.",
+		Interactable.INTERACT_TYPES.container, { "contents" : {"name" : "rock", "count" : 1}}, true
+	),
+	Interactable.new(
+		Vector2i(17,7), "Chest", "There is an overturned carriage with an unopened chest.",
+		Interactable.INTERACT_TYPES.container, { "contents" : {"name" : "key", "count" : 1}}, false, true
+	),
+	Interactable.new(
+		Vector2i(27,13), "Locked Gate", "The path into the mountains is blocked by a locked gate.",
+		Interactable.INTERACT_TYPES.switch, { "target_action" : "unlock_self",\
+			"key" : "key"}, false, true
+	),
+	Interactable.new(
+		Vector2i(10,10)
+	)
+]
 
 # set up
-# fills in the world using retrieved data
+# fills in the world using retrieved data from the files
 func set_up(scene_data):
 	print(scene_data)
+	for location in locations:
+		_locations[location.position] = location
+		if location.hidden:
+			_location_layer.set_cell(location.position, -1, Constants.OVERWORLD_EMPTY_TILE)
 
 # ready
 # called once at startup
@@ -148,21 +173,26 @@ func _set_random_goal():
 
 # get interact data
 # returns any interaction custom data at a certain tile position
-func get_interact_data() -> Dictionary:
-	var result := {}
-	
+func get_interact_data() -> Interactable:
 	# check on top of player
 	var grid_pos = _collision_layer.local_to_map(_player.global_position)
-	var cell_data = _location_layer.get_cell_tile_data(grid_pos)
 	
 	# check in front of player
-	if not cell_data or not cell_data.has_custom_data(Constants.TILESET_INTERACTABLE_TYPE):
+	if not grid_pos in _locations:
 			grid_pos += Vector2i(_animator.get("parameters/Idle/blend_position"))
-			cell_data = _location_layer.get_cell_tile_data(grid_pos)
 	
-	# find data
-	if cell_data and cell_data.has_custom_data(Constants.TILESET_INTERACTABLE_TYPE):
-		for key in cell_data.get_custom_data_keys():
-			result[key] = cell_data.get_custom_data(key)
+	if grid_pos in _locations:
+		return _locations[grid_pos]
 	
-	return result
+	return Interactable.new() # the empty interactable
+
+# set tile sprite
+# reveal a hidden tile by finding its sprite from its data
+func set_tile_sprite(target : Vector2i):
+	var tile_pos = _collision_layer.local_to_map(_player.global_position)
+	print('_location_layer.set_cell(tile_pos, -1, target)')
+
+# remove tile
+# deletes a tile at a specific position from the locations layer
+func remove_tile(pos : Vector2i = _player.global_position):
+	print('delete tile')

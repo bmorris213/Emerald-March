@@ -1,5 +1,5 @@
 # Rise of the Dragon King
-# 07-05-2025
+# 07-08-2025
 # Brian Morris
 
 extends Node
@@ -54,57 +54,79 @@ func at_new_tile(_position : Vector2):
 # select
 # called when the select action is called during active control scheme
 func try_select():
-	var data = _current_scene.get_interact_data()
+	var interactable = _current_scene.get_interact_data()
 	
-	if data == {}:
+	if interactable.type == Interactable.INTERACT_TYPES.empty:
 		_read_data()
+		return
 	
-	var select_type = data.get(Constants.TILESET_INTERACTABLE_TYPE)
-	var select_target = data.get(Constants.TILESET_INTERACTABLE_TARGET)
-	var select_data = data.get(Constants.TILESET_INTERACTABLE_DATA)
+	match interactable.type:
+		Interactable.INTERACT_TYPES.point_of_interest:
+			_read_data(interactable.key_string, interactable.description)
+		Interactable.INTERACT_TYPES.switch:
+			_toggle_switch(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.container:
+			_open_container(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.entrance:
+			_take_entrance(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.npc:
+			_speak_to(interactable.key_string, interactable.description, interactable.target_data)
+		_:
+			var line := {
+				"name" : "Unknown",
+				"text" : "Error type of interactble!",
+				"choices" : []
+			}
+			GameManager.menu_manager.start_dialogue([line])
+			return
 	
-	var string_array = Constants.INTERACT_TYPES.keys()
-	var match_a = string_array[Constants.INTERACT_TYPES.point_of_interest]
-	var match_b = string_array[Constants.INTERACT_TYPES.container]
-	var match_c = string_array[Constants.INTERACT_TYPES.entrance]
-	var match_d = string_array[Constants.INTERACT_TYPES.npc]
-	
-	match select_type:
-		match_a:
-			_read_data(select_target, select_data)
-		match_b:
-			_open_container(select_target, select_data)
-		match_c:
-			_take_entrance(select_target, select_data)
-		match_d:
-			_speak_to(select_target, select_data)
+	if interactable.hidden:
+		_current_scene.set_tile_sprite(Interactable.TILESET_INTERACTABLE_SPRITES[interactable.type])
+	if interactable.temporary:
+		_current_scene.remove_tile()
 
 # read data
 # interaction with a point of interest to just narate something
 func _read_data(target : String = "", data : String = ""):
-	print("point of interest")
 	if target == "" and data == "":
-		print("No problem here.")
+		var line := {
+			"name" : "Searching...",
+			"text" : "Nothing of interest found!",
+			"choices" : []
+		}
+		GameManager.menu_manager.start_dialogue([line])
+		return
 	
-	print(target, data)
+	var line := {
+		"name" : target,
+		"text" : data,
+		"choices" : []
+	}
+	GameManager.menu_manager.start_dialogue([line])
+
+# toggle switch
+# use a functioning switch to change something about the scene
+func _toggle_switch(_name : String, description : String, target : Dictionary):
+	print("switch")
+	print(_name, description, target)
 
 # open container
 # interaction with a container to potentially gain items
-func _open_container(target : String, data : String):
+func _open_container(_name : String, description : String, target : Dictionary):
 	print("container")
-	print(target, data)
+	print(_name, description, target)
 
 # take entrance
 # use an interactable to initiate a scene transition
-func _take_entrance(target : String, data : String):
+func _take_entrance(_name : String, description : String, target : Dictionary):
 	print("entrance")
-	print(target, data)
+	print(_name, description, target)
 
 # speak to
 # interact with an npc, initiating a dialogue tree
-func _speak_to(target : String, data : String):
+func _speak_to(_name : String, description : String, target : Dictionary):
 	print("npc")
-	print(target, data)
+	print(_name, description, target)
 
 # call action
 # uses a party ability within the active scene
