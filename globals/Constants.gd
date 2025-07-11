@@ -1,5 +1,5 @@
 # Emerald March
-# 07-08-2025
+# 07-11-2025
 # Brian Morris
 
 # Constants
@@ -60,6 +60,7 @@ const QUICK_MENU_NAME := "QuickMenu"
 const DIALOGUE_BOX_NAME := "DialogueBox"
 const DIALOGUE_BOX_TITLE_NAME := "Title"
 const DIALOGUE_BOX_DESCRIPTION_NAME := "Text"
+const SCOPE_MENU_NAME := "ScopeMenu"
 const TOOLTIP_NAME := "ToolTip"
 const QUIT_WARNING_NAME := "QuittingWarning"
 const HEADER_NAME := "Header"

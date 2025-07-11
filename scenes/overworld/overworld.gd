@@ -1,11 +1,13 @@
 # Emerald March
-# 07-08-2025
+# 07-11-2025
 # Brian Morris
 
 extends Node2D
 
 # overworld
 # handles generating the overworld region map from data and managing interactions with that map
+
+const SCENE_NAME := Constants.SCENE_ID.overworld
 
 # player node references
 @onready var _player = $Player
@@ -197,3 +199,19 @@ func set_tile_sprite(target : Vector2i):
 # deletes a tile at a specific position from the locations layer
 func remove_tile(pos : Vector2i = _player.global_position):
 	print('delete tile')
+
+# start scoping
+# initiates scope mode
+func start_scoping():
+	print('scope')
+
+# end scoping
+# finishes scope mode
+func end_scoping():
+	print('scope not')
+
+# move scope
+# shifts position of scope box
+func move_scope(direction : Vector2i):
+	if direction != Vector2i.ZERO:
+		print(direction)

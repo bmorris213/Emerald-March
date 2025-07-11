@@ -1,5 +1,5 @@
 # Emerald March
-# 07-08-2025
+# 07-11-2025
 # Brian Morris
 
 extends Node
@@ -8,6 +8,9 @@ extends Node
 # handles switching, running, initializing, and loading scenes
 
 class_name SceneManager
+
+# control variable
+var is_idle : bool
 
 # node references
 var _current_scene : Node
@@ -35,6 +38,26 @@ func set_scene(path : String = Constants.INITIAL_SCENE, scene_data : Dictionary 
 	_current_scene = new_scene
 	
 	_current_scene.set_up(scene_data)
+
+# is in overworld
+# returns true if active scene is an overworld type
+func is_in_overworld() -> bool:
+	return _current_scene.SCENE_NAME == Constants.SCENE_ID.overworld
+
+# start scoping
+# initiates "scope" mode of current scene
+func start_scoping():
+	_current_scene.start_scoping()
+
+# end scoping
+# stops the "scope" mode of the current scene
+func end_scoping():
+	_current_scene.end_scoping()
+
+# move scope
+# shifts the scope selector on current scene
+func move_scope(direction : Vector2i):
+	_current_scene.move_scope(direction)
 
 # move player
 # sets the current player's mover to travel 1 tileset unit in a given direction
@@ -88,20 +111,21 @@ func try_select():
 # read data
 # interaction with a point of interest to just narate something
 func _read_data(target : String = "", data : String = ""):
+	var line := {}
+	
 	if target == "" and data == "":
-		var line := {
+		line = {
 			"name" : "Searching...",
 			"text" : "Nothing of interest found!",
 			"choices" : []
 		}
-		GameManager.menu_manager.start_dialogue([line])
-		return
+	else:
+		line = {
+			"name" : target,
+			"text" : data,
+			"choices" : []
+		}
 	
-	var line := {
-		"name" : target,
-		"text" : data,
-		"choices" : []
-	}
 	GameManager.menu_manager.start_dialogue([line])
 
 # toggle switch

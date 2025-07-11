@@ -1,5 +1,5 @@
 # Emerald March
-# 07-05-2025
+# 07-11-2025
 # Brian Morris
 
 extends Node
@@ -58,7 +58,7 @@ func setup_global_scene(root : Node):
 # called once per frame
 func _process(delta : float):
 	# ask ControlManager to handle input and take action
-	control_manager.handle_input(delta)
+	control_manager.handle_input()
 	
 	# pass delta to managers
 	control_manager.process(delta)

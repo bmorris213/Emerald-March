@@ -1,5 +1,5 @@
 # Emerald March
-# 07-07-2025
+# 07-11-2025
 # Brian Morris
 
 extends Node
@@ -16,7 +16,8 @@ var _active_menu : Menu
 enum Menus {
 	pause_menu,
 	quick_menu,
-	dialogue_box
+	dialogue_box,
+	scope_menu
 }
 
 # node references of global ui
@@ -24,6 +25,7 @@ var _canvas : CanvasLayer
 var _pause_menu : Menu
 var _quick_menu : Menu
 var _dialogue_box : Menu
+var _scope_menu : Menu
 var _tooltip : Label
 var _quit_warning : Control
 
@@ -69,6 +71,7 @@ func set_canvas(target_node : CanvasLayer):
 	_pause_menu = _canvas.find_child(Constants.PAUSE_MENU_NAME)
 	_quick_menu = _canvas.find_child(Constants.QUICK_MENU_NAME)
 	_dialogue_box = _canvas.find_child(Constants.DIALOGUE_BOX_NAME)
+	_scope_menu = _canvas.find_child(Constants.SCOPE_MENU_NAME)
 	_tooltip = _canvas.find_child(Constants.TOOLTIP_NAME)
 	_quit_warning = _canvas.find_child(Constants.QUIT_WARNING_NAME)
 
@@ -83,7 +86,7 @@ func _attach_menu(new_menu : Menu):
 # open menu
 # open up a default menu
 func open_menu(target : Menus):
-	close_menus()
+	GameManager.control_manager.set_menus()
 	_canvas.visible = true
 	match(target):
 		Menus.pause_menu:
@@ -102,10 +105,14 @@ func close_menus():
 		_collapse_menu(menu)
 	_menu_stack = []
 	_active_menu = null
+	GameManager.control_manager.set_active(true)
+	GameManager.control_manager.interrupt()
 
 # collapse menu
 # closes a signle menu
 func _collapse_menu(menu : Menu):
+	if not menu:
+		return
 	menu.move_selector_to(0)
 	menu.unset_choices()
 	menu.visible = false
@@ -130,7 +137,7 @@ func select():
 # go back a menu layer
 func cancel():
 	# cancel closes dialogue or base-level menus
-	if is_speaking() or _menu_stack.size() == 1:
+	if is_speaking() or _menu_stack.size() <= 1:
 		close_menus()
 		return
 	
@@ -174,11 +181,6 @@ func highlight_quick_key(direction : Vector2i):
 		Vector2i.RIGHT : 2
 	}
 	_quick_menu.move_selector_to(direction_index[direction])
-
-# viewing menu
-# returns true if any menu is currently open
-func viewing_menu() -> bool:
-	return not _menu_stack.is_empty()
 
 # fade in idle
 # make the hud show up slowly
