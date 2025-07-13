@@ -1,5 +1,5 @@
 # Emerald March
-# 07-11-2025
+# 07-13-2025
 # Brian Morris
 
 extends Node2D
@@ -93,7 +93,6 @@ var locations = [
 # set up
 # fills in the world using retrieved data from the files
 func set_up(scene_data):
-	print(scene_data)
 	for location in locations:
 		_locations[location.position] = location
 		if location.hidden:
@@ -105,7 +104,7 @@ func _ready():
 	_animator = $Player/AnimationTree
 	_state_machine = _animator.get("parameters/playback")
 	_player.teleport(_player.global_position)
-	_player.move_speed = 4
+	_player.move_speed = Constants.OVERWORLD_PLAYER_SPEED
 	_set_random_goal()
 	_collision_layer.visible = false
 
@@ -162,11 +161,10 @@ func _can_move_to(start_pos : Vector2, end_pos : Vector2) -> bool:
 # function called after every tile of movement
 func took_step(_position : Vector2):
 	steps += 1
-	print(steps, " : " ,_step_goal)
 	if steps >= _step_goal:
 		_set_random_goal()
 		steps = 0
-		print("battle start")
+		GameManager.scene_manager.start_battle({"current_pos" : _position})
 
 # random goal
 # assigns a new random step goal to reach before battle
@@ -178,11 +176,15 @@ func _set_random_goal():
 # returns any interaction custom data at a certain tile position
 func get_interact_data() -> Interactable:
 	# check on top of player
-	var grid_pos = _collision_layer.local_to_map(_player.global_position)
+	var grid_pos = _collision_layer.local_to_map(_player.get_location(true))
 	
 	# check in front of player
 	if not grid_pos in _locations:
 			grid_pos += Vector2i(_animator.get("parameters/Idle/blend_position"))
+			# check in front of player only if there's collision in front of player
+			var tile_data = _collision_layer.get_cell_tile_data(grid_pos)
+			if not tile_data:
+				grid_pos = null
 	
 	if grid_pos in _locations:
 		return _locations[grid_pos]
@@ -192,12 +194,12 @@ func get_interact_data() -> Interactable:
 # set tile sprite
 # reveal a hidden tile by finding its sprite from its data
 func set_tile_sprite(target : Vector2i):
-	var tile_pos = _collision_layer.local_to_map(_player.global_position)
+	var tile_pos = _collision_layer.local_to_map(_player.get_location(true))
 	print('_location_layer.set_cell(tile_pos, -1, target)')
 
 # remove tile
 # deletes a tile at a specific position from the locations layer
-func remove_tile(pos : Vector2i = _player.global_position):
+func remove_tile(pos : Vector2i = _player.get_location(true)):
 	print('delete tile')
 
 # start scoping

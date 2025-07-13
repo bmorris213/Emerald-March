@@ -1,5 +1,5 @@
 # Emerald March
-# 07-11-2025
+# 07-13-2025
 # Brian Morris
 
 extends Node
@@ -15,9 +15,9 @@ enum _mode {
 	menu,
 	quick_menu,
 	scoping,
-	active
+	overworld
 }
-var _control_mode := _mode.active
+var _control_mode := _mode.overworld
 
 # control variables
 var _quit_timer := 0.0
@@ -28,12 +28,12 @@ var _idle_timer := 0.0
 var _menu_direction := Vector2i.ZERO
 var _menu_timer := 0.0
 var _menu_delay := Constants.MENU_MAX_MAX_DELAY
+var _last_active_mode := _mode.overworld
 
-# active control details
-var _last_direction := Vector2i.ZERO
+# overworld control details
 var _action_buffer := ""
-var _move_buffer := Vector2i.ZERO
 var _player_is_moving := false
+
 var _quick_key_lock := false # distinguish between a toggle and hold of quick key menu
 
 # process
@@ -57,36 +57,28 @@ func process(delta : float):
 		if _quit_timer >= Constants.MENU_QUIT_DELAY:
 			GameManager.get_tree().quit() # exit game completely
 	
-	# active screen idle timer
-	if _control_mode == _mode.active and not Input.is_anything_pressed():
+	# overworld screen idle timer
+	if _control_mode == _mode.overworld and not Input.is_anything_pressed():
 		GameManager.scene_manager.is_idle = true
 		_idle_timer += delta
 		
 		if _idle_timer >= Constants.IDLE_INITIAL_DELAY and _idle_timer <= Constants.IDLE_INITIAL_DELAY * 3:
 			GameManager.menu_manager.fade_in_idle(_idle_timer - Constants.IDLE_INITIAL_DELAY)
 
-# set active
-# changes to an active input control
-func set_active(is_active : bool = true):
-	if is_active:
-		_control_mode = _mode.active
-	else:
-		_control_mode = _mode.inactive
-
 # set menus
 # changes to a menu input control
 func set_menus():
+	_last_active_mode = _control_mode
 	_control_mode = _mode.menu
+
+# return from menus
+# returns from whence the menus arrived
+func return_from_menus():
+	_control_mode = _last_active_mode
 
 # handle input
 # main control delegation loop
 func handle_input():
-	# quick check for no longer being idle
-	if _idle_timer != 0.0 and Input.is_anything_pressed():
-		_idle_timer = 0.0
-		GameManager.menu_manager.stop_idle()
-		GameManager.scene_manager.is_idle = false
-	
 	# check for quit action start and end
 	if _trying_to_quit:
 		if not Input.is_action_pressed("quit"):
@@ -105,8 +97,8 @@ func handle_input():
 			_quick_input()
 		_mode.scoping:
 			_scope_input()
-		_mode.active:
-			_active_input()
+		_mode.overworld:
+			_overworld_input()
 
 # menu input
 # handles processing input for any menus
@@ -185,7 +177,7 @@ func _quick_input():
 			_quick_key_lock = false
 	else:
 		if Input.is_action_just_released("cancel"):
-			_control_mode = _mode.active
+			_control_mode = _mode.overworld
 			GameManager.menu_manager.close_menus()
 			return
 	
@@ -206,7 +198,7 @@ func _quick_input():
 		var selected_action = GameManager.get_quick_action(quick_key_choice)
 		GameManager.menu_manager.close_menus()
 		GameManager.scene_manager.call_action(selected_action)
-		_control_mode = _mode.active
+		_control_mode = _mode.overworld
 		_quick_key_lock = false
 
 # scope input
@@ -235,9 +227,15 @@ func _scope_input():
 		direction.x = -1
 	GameManager.scene_manager.move_scope(direction)
 
-# active input
-# handles processing input for the active mode
-func _active_input():
+# overworld input
+# handles processing input for the overworld mode
+func _overworld_input():
+	# quick check for no longer being idle
+	if _idle_timer != 0.0 and Input.is_anything_pressed():
+		_idle_timer = 0.0
+		GameManager.menu_manager.stop_idle()
+		GameManager.scene_manager.is_idle = false
+	
 	# buffer actions and movement until movement ends
 	if _player_is_moving:
 		if Input.is_action_just_pressed("select"):
@@ -246,14 +244,6 @@ func _active_input():
 			_action_buffer = "menu"
 		elif Input.is_action_just_pressed("cancel"):
 			_action_buffer = "cancel"
-		if Input.is_action_just_pressed("up") and _last_direction != Vector2i.UP:
-			_move_buffer = Vector2i.UP
-		if Input.is_action_just_pressed("down") and _last_direction != Vector2i.DOWN:
-			_move_buffer = Vector2i.DOWN
-		if Input.is_action_just_pressed("left") and _last_direction != Vector2i.LEFT:
-			_move_buffer = Vector2i.LEFT
-		if Input.is_action_just_pressed("right") and _last_direction != Vector2i.RIGHT:
-			_move_buffer = Vector2i.RIGHT
 		return
 	
 	# check for a stored action buffer
@@ -261,12 +251,10 @@ func _active_input():
 		match(_action_buffer):
 			"select":
 				GameManager.scene_manager.try_select()
-				_action_buffer = ""
 				interrupt()
 				return
 			"menu":
 				GameManager.menu_manager.open_menu(MenuManager.Menus.pause_menu)
-				_action_buffer = ""
 				_control_mode = _mode.menu
 				interrupt()
 				return
@@ -281,27 +269,9 @@ func _active_input():
 					GameManager.menu_manager.open_menu(MenuManager.Menus.quick_menu)
 				interrupt()
 				return
-	# check for a stored movement buffer
-	if _move_buffer == Vector2i.UP and _last_direction != Vector2i.UP:
-		_move_buffer = Vector2i.ZERO
-		_last_direction = Vector2i.UP
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-		return
-	elif _move_buffer == Vector2i.DOWN and _last_direction != Vector2i.DOWN:
-		_move_buffer = Vector2i.ZERO
-		_last_direction = Vector2i.DOWN
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-		return
-	elif _move_buffer == Vector2i.LEFT and _last_direction != Vector2i.LEFT:
-		_move_buffer = Vector2i.ZERO
-		_last_direction = Vector2i.LEFT
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-		return
-	elif _move_buffer == Vector2i.RIGHT and _last_direction != Vector2i.RIGHT:
-		_move_buffer = Vector2i.ZERO
-		_last_direction = Vector2i.RIGHT
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-		return
+			_:
+				push_error("ControlManager: unknown action buffer!")
+				return
 	
 	# start a move or an action
 	if Input.is_action_just_pressed("select"):
@@ -321,42 +291,19 @@ func _active_input():
 			_quick_key_lock = true
 			GameManager.menu_manager.open_menu(MenuManager.Menus.quick_menu)
 		interrupt()
-	elif Input.is_action_just_pressed("up"):
-		_last_direction = Vector2i.UP
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-	elif Input.is_action_just_pressed("down"):
-		_last_direction = Vector2i.DOWN
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-	elif Input.is_action_just_pressed("left"):
-		_last_direction = Vector2i.LEFT
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-	elif Input.is_action_just_pressed("right"):
-		_last_direction = Vector2i.RIGHT
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
+	elif Input.is_action_pressed("up"):
+		_player_is_moving = GameManager.scene_manager.move_player(Vector2i.UP)
+	elif Input.is_action_pressed("down"):
+		_player_is_moving = GameManager.scene_manager.move_player(Vector2i.DOWN)
+	elif Input.is_action_pressed("left"):
+		_player_is_moving = GameManager.scene_manager.move_player(Vector2i.LEFT)
+	elif Input.is_action_pressed("right"):
+		_player_is_moving = GameManager.scene_manager.move_player(Vector2i.RIGHT)
 
-# will continue move
-# called once the mover stops at a new tile
-func will_continue_move() -> bool:
-	# opening a menu stops movement
-	if not _control_mode == _mode.active:
-		_move_buffer = Vector2i.ZERO
-		_player_is_moving = false
-		return false
-	
-	# we will only continue if the directional key is being held down
-	if (Input.is_action_pressed("up") and _last_direction == Vector2i.UP) or\
-	(Input.is_action_pressed("down") and _last_direction == Vector2i.DOWN) or\
-	(Input.is_action_pressed("left") and _last_direction == Vector2i.LEFT) or\
-	(Input.is_action_pressed("right") and _last_direction == Vector2i.RIGHT):
-		# clear buffers and move
-		_action_buffer = ""
-		_move_buffer = Vector2i.ZERO
-		_player_is_moving = GameManager.scene_manager.move_player(_last_direction)
-		return true
-	
-	 # movement has ended
+# move break
+# tells controls player has stoped moving
+func move_break():
 	_player_is_moving = false
-	return false
 
 # interrupt
 # temporarily disables controls globally during a transition
@@ -365,6 +312,8 @@ func interrupt(duration : float = Constants.MIN_INTERRUPT_DURATION):
 	if duration <= 0:
 		push_error("ControlManager: interrupt called for <= 0 duration")
 		return
+	
+	_action_buffer = ""
 	
 	# enforce minimum and maximum durations
 	if duration < Constants.MIN_INTERRUPT_DURATION:

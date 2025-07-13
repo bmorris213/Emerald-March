@@ -1,5 +1,5 @@
 # Emerald March
-# 07-11-2025
+# 07-13-2025
 # Brian Morris
 
 extends Node
@@ -70,9 +70,8 @@ func move_player(direction : Vector2i) -> bool:
 func at_new_tile(_position : Vector2):
 	# movement has stopped on a new tile
 	_current_scene.took_step(_position)
-	if GameManager.control_manager.will_continue_move():
-		return
 	_current_scene.is_walking = false
+	GameManager.control_manager.move_break()
 
 # select
 # called when the select action is called during active control scheme
@@ -95,12 +94,7 @@ func try_select():
 		Interactable.INTERACT_TYPES.npc:
 			_speak_to(interactable.key_string, interactable.description, interactable.target_data)
 		_:
-			var line := {
-				"name" : "Unknown",
-				"text" : "Error type of interactble!",
-				"choices" : []
-			}
-			GameManager.menu_manager.start_dialogue([line])
+			push_error("SceneManager: Unknown type of interactable!")
 			return
 	
 	if interactable.hidden:
@@ -110,10 +104,10 @@ func try_select():
 
 # read data
 # interaction with a point of interest to just narate something
-func _read_data(target : String = "", data : String = ""):
+func _read_data(_name : String = "", description : String = ""):
 	var line := {}
 	
-	if target == "" and data == "":
+	if _name == "" and description == "":
 		line = {
 			"name" : "Searching...",
 			"text" : "Nothing of interest found!",
@@ -121,8 +115,8 @@ func _read_data(target : String = "", data : String = ""):
 		}
 	else:
 		line = {
-			"name" : target,
-			"text" : data,
+			"name" : _name,
+			"text" : description,
 			"choices" : []
 		}
 	

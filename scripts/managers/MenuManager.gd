@@ -1,5 +1,5 @@
 # Emerald March
-# 07-11-2025
+# 07-13-2025
 # Brian Morris
 
 extends Node
@@ -105,8 +105,7 @@ func close_menus():
 		_collapse_menu(menu)
 	_menu_stack = []
 	_active_menu = null
-	GameManager.control_manager.set_active(true)
-	GameManager.control_manager.interrupt()
+	GameManager.control_manager.return_from_menus()
 
 # collapse menu
 # closes a signle menu
