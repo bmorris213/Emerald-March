@@ -1,5 +1,5 @@
 # Emerald March
-# 07-13-2025
+# 07-14-2025
 # Brian Morris
 
 extends Node
@@ -126,25 +126,25 @@ func _read_data(_name : String = "", description : String = ""):
 # use a functioning switch to change something about the scene
 func _toggle_switch(_name : String, description : String, target : Dictionary):
 	print("switch")
-	print(_name, description, target)
+	print(_name, description, target) # WIP
 
 # open container
 # interaction with a container to potentially gain items
 func _open_container(_name : String, description : String, target : Dictionary):
 	print("container")
-	print(_name, description, target)
+	print(_name, description, target) # WIP
 
 # take entrance
 # use an interactable to initiate a scene transition
 func _take_entrance(_name : String, description : String, target : Dictionary):
 	print("entrance")
-	print(_name, description, target)
+	print(_name, description, target) # WIP
 
 # speak to
 # interact with an npc, initiating a dialogue tree
 func _speak_to(_name : String, description : String, target : Dictionary):
 	print("npc")
-	print(_name, description, target)
+	print(_name, description, target) # WIP
 
 # call action
 # uses a party ability within the active scene
@@ -154,4 +154,5 @@ func call_action(action : Dictionary):
 # start battle
 # switches scenes to the battle screen when player triggers a random battle
 func start_battle(data : Dictionary):
+	print("BATTLE START")
 	print(data) # WIP

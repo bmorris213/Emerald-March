@@ -1,5 +1,5 @@
 # Emerald March
-# 07-13-2025
+# 07-14-2025
 # Brian Morris
 
 # Constants
@@ -77,7 +77,6 @@ const TYPING_SPEED := {
 const RAPID_TYPING_MULTIPLIER := 2.75
 
 const OVERWORLD_EMPTY_TILE := Interactable.TILESET_INTERACTABLE_SPRITES[Interactable.INTERACT_TYPES.empty]
-const OVERWORLD_PLAYER_SPEED := 2.4
 
 # overworld generation
 enum REGIONS {

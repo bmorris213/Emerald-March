@@ -1,5 +1,5 @@
 # Emerald March
-# 07-13-2025
+# 07-14-2025
 # Brian Morris
 
 extends Node2D
@@ -13,6 +13,8 @@ const SCENE_NAME := Constants.SCENE_ID.overworld
 @onready var _player = $Player
 var _animator
 var _state_machine
+var player_has_boat := false
+var player_in_cart := false
 
 # tilemap node references
 @onready var _ground_layer := $GroundLayer
@@ -24,7 +26,6 @@ var _state_machine
 var is_walking := false # determines sprite animation to play
 var _previous_walking_state := false
 var steps := 0
-var _step_goal : int
 
 # terrain values
 
@@ -90,6 +91,61 @@ var locations = [
 	)
 ]
 
+enum GROUND_TYPES {
+	normal,
+	hazardous,
+	dangerous,
+	lethal,
+	shallow_water,
+	deep_water,
+	none
+}
+const GROUND_ATLAS_COORDS := {
+	Vector2i(0,1): GROUND_TYPES.normal,
+	Vector2i(0,2): GROUND_TYPES.hazardous,
+	Vector2i(0,3): GROUND_TYPES.dangerous,
+	Vector2i(0,4): GROUND_TYPES.lethal,
+	Vector2i(5,2): GROUND_TYPES.shallow_water,
+	Vector2i(5,3): GROUND_TYPES.deep_water
+}
+const GROUND_DANGER_MULTIPLIERS := {
+	GROUND_TYPES.normal: 1.0,
+	GROUND_TYPES.hazardous: 1.2,
+	GROUND_TYPES.dangerous: 1.7,
+	GROUND_TYPES.lethal: 2.0,
+	GROUND_TYPES.shallow_water: 1.5
+}
+enum TERRAIN_TYPES {
+	plains,
+	roads,
+	wilds,
+	hills,
+	woods,
+	mountains
+}
+const TERRAIN_ATLAS_COORDS := {
+	Vector2i(1,1): TERRAIN_TYPES.wilds,
+	Vector2i(1,2): TERRAIN_TYPES.hills,
+	Vector2i(1,3): TERRAIN_TYPES.woods,
+	Vector2i(1,4): TERRAIN_TYPES.mountains
+}
+const TERRAIN_MOVE_SPEEDS := {
+	TERRAIN_TYPES.plains : 2.4,
+	TERRAIN_TYPES.roads : 2.9,
+	TERRAIN_TYPES.wilds : 2.0,
+	TERRAIN_TYPES.hills : 1.6,
+	TERRAIN_TYPES.woods : 1.6,
+	TERRAIN_TYPES.mountains : 1.2
+}
+const TERRAIN_ENCOUNTER_RATES := {
+	TERRAIN_TYPES.plains : 0.03,
+	TERRAIN_TYPES.roads : 0.01,
+	TERRAIN_TYPES.wilds : 0.06,
+	TERRAIN_TYPES.hills : 0.07,
+	TERRAIN_TYPES.woods : 0.08,
+	TERRAIN_TYPES.mountains : 0.12
+}
+
 # set up
 # fills in the world using retrieved data from the files
 func set_up(scene_data):
@@ -104,15 +160,19 @@ func _ready():
 	_animator = $Player/AnimationTree
 	_state_machine = _animator.get("parameters/playback")
 	_player.teleport(_player.global_position)
-	_player.move_speed = Constants.OVERWORLD_PLAYER_SPEED
-	_set_random_goal()
-	_collision_layer.visible = false
+	var grid_pos = _ground_layer.local_to_map(_player.global_position)
+	var position_data = _get_position_data(grid_pos)
 
 # process
 # called once per frame
 func _process(_delta):
 	# fix player sprite to current position of mover
 	_player.global_position = _player.get_location()
+	
+	# update move speed
+	var position_data = _get_position_data(_player.global_position)
+	_player.move_speed = _ground_layer.tile_set.tile_size.x\
+		* TERRAIN_MOVE_SPEEDS[position_data["terrain"]]
 	
 	# update sprite animation if walking value changes
 	if is_walking != _previous_walking_state:
@@ -126,8 +186,8 @@ func _process(_delta):
 # attempts a move in the given direction
 func try_move(direction : Vector2i) -> bool:
 	_player.global_position = _player.get_location()
-	var target = _player.global_position + Vector2(direction * _collision_layer.tile_set.tile_size)
-	if _can_move_to(_player.global_position, target):
+	var target = _player.global_position + Vector2(direction * _ground_layer.tile_set.tile_size)
+	if _tile_is_walkable(target):
 		_player.move_to(target)
 		is_walking = true
 		return true
@@ -139,44 +199,28 @@ func update_player_facing(direction : Vector2i):
 	_animator.set("parameters/Idle/blend_position", direction)
 	_animator.set("parameters/Walking/blend_position", direction)
 
-# can move to
-# tests the line between start and stop if player movement would be valid
-func _can_move_to(start_pos : Vector2, end_pos : Vector2) -> bool:
-	# convert starting and stopping points
-	var start_tile = _collision_layer.local_to_map(start_pos)
-	var end_tile = _collision_layer.local_to_map(end_pos)
-	
-	# find the line of tiles on the collision layer
-	var points = Utilities.bresenham_line(start_tile, end_tile)
-	
-	# for first collision tile hit, we can't make this movement
-	for point in points:
-		var tile_data = _collision_layer.get_cell_tile_data(point)
-		if tile_data:
-			return false
-	
-	return true
-
 # took step
 # function called after every tile of movement
 func took_step(_position : Vector2):
 	steps += 1
-	if steps >= _step_goal:
-		_set_random_goal()
-		steps = 0
-		GameManager.scene_manager.start_battle({"current_pos" : _position})
-
-# random goal
-# assigns a new random step goal to reach before battle
-func _set_random_goal():
+	var position_data = _get_position_data(_position)
+	
+	# try combat
 	var r = GameManager.random_generator.randf()
-	_step_goal = lerp(6, 15, r)
+	var ground_danger = GROUND_DANGER_MULTIPLIERS[position_data["ground"]]
+	var encounter_rate = TERRAIN_ENCOUNTER_RATES[position_data["terrain"]]
+	print('rand:', r, '\trate:', encounter_rate, '\tdanger:', ground_danger)
+	print(encounter_rate * ground_danger)
+	if r < encounter_rate * ground_danger:
+		var string_ground = GROUND_TYPES.keys()[position_data["ground"]]
+		var string_terrain = TERRAIN_TYPES.keys()[position_data["terrain"]]
+		GameManager.scene_manager.start_battle(position_data)
 
 # get interact data
 # returns any interaction custom data at a certain tile position
 func get_interact_data() -> Interactable:
 	# check on top of player
-	var grid_pos = _collision_layer.local_to_map(_player.get_location(true))
+	var grid_pos = _ground_layer.local_to_map(_player.get_location(true))
 	
 	# check in front of player
 	if not grid_pos in _locations:
@@ -190,6 +234,57 @@ func get_interact_data() -> Interactable:
 		return _locations[grid_pos]
 	
 	return Interactable.new() # the empty interactable
+
+# get position data
+# returns an object representing the tile at a certain position
+func _get_position_data(pos : Vector2) -> Dictionary:
+	# grab tilemap position
+	var grid_pos = _ground_layer.local_to_map(pos)
+	
+	# grab atlas coordinates
+	var ground = _ground_layer.get_cell_atlas_coords(grid_pos)
+	var terrain = _terrain_layer.get_cell_atlas_coords(grid_pos)
+	var collision = _collision_layer.get_cell_atlas_coords(grid_pos)
+	
+	var position_data := {}
+	
+	# assign ground type
+	if ground == Vector2i(-1, -1) or not GROUND_ATLAS_COORDS.has(ground):
+		position_data["ground"] = GROUND_TYPES.none
+	else:
+		position_data["ground"] = GROUND_ATLAS_COORDS[ground]
+	# assign terrain type
+	if terrain == Vector2i(-1, -1):
+		position_data["terrain"] = TERRAIN_TYPES.plains
+	elif terrain.x < 5 and terrain.x > 1 and terrain.y > 0:
+		position_data["terrain"] = TERRAIN_TYPES.roads
+	elif not TERRAIN_ATLAS_COORDS.has(terrain):
+		position_data["terrain"] = TERRAIN_TYPES.plains
+	else:
+		position_data["terrain"] = TERRAIN_ATLAS_COORDS[terrain]
+	# check for collision
+	position_data["collision"] = collision != Vector2i(-1,-1)
+	
+	return position_data
+
+# tile is walkable
+# returns true if tile could be traversed by the player
+func _tile_is_walkable(target : Vector2) -> bool:
+	var target_details = _get_position_data(target)
+	
+	# validate terrain
+	if player_in_cart and not target_details["terrain"] == TERRAIN_TYPES.roads:
+		return false
+	
+	# validate ground
+	var ground = target_details["ground"]
+	if ground == GROUND_TYPES.none or ground == GROUND_TYPES.deep_water:
+		return false
+	if ground == GROUND_TYPES.shallow_water and not player_has_boat:
+		return false
+	
+	# validate collision
+	return not target_details["collision"]
 
 # set tile sprite
 # reveal a hidden tile by finding its sprite from its data

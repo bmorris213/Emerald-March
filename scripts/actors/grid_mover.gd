@@ -1,5 +1,5 @@
 # Emerald March
-# 07-13-2025
+# 07-14-2025
 # Brian Morris
 
 extends Node
@@ -13,35 +13,40 @@ class_name GridMover
 var move_speed : int
 
 # control variables
-var _start_position := Vector2.ZERO
 var _current_position := Vector2.ZERO
 var _target_position := Vector2.ZERO
-var _movement_progress := 0.0
 
 # physical process
 # is called once per frame of the physics engine
 func _physics_process(delta):
-	if _current_position != _target_position:
-		_current_position = _start_position.lerp(_target_position, _movement_progress)
-		_movement_progress += delta * move_speed
-	if _movement_progress >= 1.0:
-			_movement_progress = 0.0
-			_current_position = _target_position
-			GameManager.scene_manager.at_new_tile(_current_position)
+	# no movement is needed
+	if _current_position == _target_position:
+		return
+	
+	# plan movement
+	var direction = (_target_position - _current_position).normalized()
+	var distance_to_move = delta * move_speed
+	var remaining_distance = _current_position.distance_to(_target_position)
+	
+	# check if movement would finish progress
+	if distance_to_move >= remaining_distance:
+		_current_position = _target_position
+		GameManager.scene_manager.at_new_tile(_current_position)
+		return
+	
+	# move
+	_current_position += direction * distance_to_move
+
 # move to
 # sets a target and begins motion for the grid mover
 func move_to(target : Vector2):
-	_start_position = _current_position
 	_target_position = target
-	_movement_progress = 0.0
 
 # teleport
 # instantaneously move position to a target
 func teleport(target : Vector2):
-	_start_position = target
 	_target_position = target
 	_current_position = target
-	_movement_progress = 0.0
 
 # ism oving
 # returns if progress is still being made towards movement
