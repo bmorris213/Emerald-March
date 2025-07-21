@@ -15,12 +15,17 @@ var temp : bool
 
 @export var executor : NodePath
 @export var method_name : String
+@export var arguments : Array
 
 # ready
 # called once at startup
 func _ready():
-	if executor and method_name:
-		var node = get_node(executor)
+	if method_name:
+		var node
+		if executor:
+			node = get_node(executor)
+		else:
+			node = GameManager
 		if node and node.has_method(method_name):
 			callable = Callable(node, method_name)
 	if not callable:

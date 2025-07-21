@@ -22,6 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 
 [node name="Header" type="ColorRect" parent="ScreenOrganizer"]
 visible = false
@@ -62,8 +63,6 @@ size_flags_vertical = 3
 [node name="PauseMenu" parent="ScreenOrganizer/Viewport" instance=ExtResource("5_5mii0")]
 visible = false
 layout_mode = 1
-offset_top = -4.0
-offset_bottom = -4.0
 
 [node name="DialogueBox" parent="ScreenOrganizer/Viewport" instance=ExtResource("3_4gmpg")]
 layout_mode = 1

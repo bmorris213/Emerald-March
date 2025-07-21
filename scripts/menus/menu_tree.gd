@@ -40,7 +40,7 @@ func open(new_menu : NodePath = root_menu):
 		_current_menu.active = false
 	var menu = get_node(new_menu)
 	if menu:
-		_menu_stack.append(menu)
+		_menu_stack.push_back(menu)
 		_current_menu = menu
 		menu.active = true
 		if not menu.visible:
@@ -49,7 +49,10 @@ func open(new_menu : NodePath = root_menu):
 		if not menu.selector_is_on():
 			_hide_current_selector = true
 			menu.toggle_selector()
+		menu.toggle_selector()
+		await get_tree().process_frame
 		menu.move_selector_to(0)
+		menu.toggle_selector()
 	else:
 		push_error("MenuTree: error menu node path in open")
 
@@ -57,8 +60,10 @@ func open(new_menu : NodePath = root_menu):
 # navigates backward in the tree, potentially closing the menu
 func back():
 	if _menu_stack.size() <= 1:
-		_menu_stack.pop_back()
-		close()
+		if can_exit:
+			GameManager.pause()
+		else:
+			close()
 		return
 	
 	# close current menu
@@ -67,9 +72,10 @@ func back():
 		_current_menu.toggle_selector()
 	if _hide_current:
 		_current_menu.visible = false
+	_menu_stack.pop_back()
 	
 	# open previous menu
-	_current_menu = _menu_stack.pop_front()
+	_current_menu = _menu_stack[-1]
 	_current_menu.active = true
 	if not _current_menu.visible:
 		_hide_current = true
@@ -77,7 +83,6 @@ func back():
 	if not _current_menu.selector_is_on():
 		_hide_current_selector = true
 		_current_menu.toggle_selector()
-	_current_menu.move_selector_to(0)
 
 # close
 # exits menu navigation
@@ -89,6 +94,7 @@ func close():
 		_current_menu.visible = false
 	
 	if can_exit:
-		GameManager.pause()
+		_current_menu = null
+		_menu_stack = []
 	else:
 		open() # return to root

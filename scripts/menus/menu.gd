@@ -20,7 +20,7 @@ const _SELECTOR_NAME := "Selector"
 const _OPTION_CONTAINER_NAME := "Options"
 
 # control variables
-var offset := Vector2(-20, 0)
+@export var offset := Vector2(-20, 0)
 var active := false
 @export var v_locked := false
 @export var h_locked := false
@@ -152,8 +152,11 @@ func _on_select():
 		return
 	if _selected_index >= _options.size():
 		return
-	
-	_options[_selected_index].callable.call()
+	var args = _options[_selected_index].arguments.duplicate()
+	if args:
+		_options[_selected_index].callable.callv(args)
+	else:
+		_options[_selected_index].callable.call()
 
 # lock movement
 # disables selector movement along one or both axis

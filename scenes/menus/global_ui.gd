@@ -15,7 +15,6 @@ extends CanvasLayer
 @onready var _pause_menu : Node = $ScreenOrganizer/Viewport/PauseMenu
 @onready var _dialogue_box : Node = $ScreenOrganizer/Viewport/DialogueBox
 
-var active : bool = false
 var _pause_active : bool = false
 var _dialogue_active : bool = false
 
@@ -26,7 +25,7 @@ const _QUIT_DELAY := 3 # how long to hold down the quit before it exits
 const _MIN_QUIT_WARNING_OPACITY := 0.4 # the starting opacity for fade in
 
 # idle information
-var can_idle := false
+var can_idle := true # WIP change to false
 var _is_idle := false
 var _idle_timer := 0.0
 const _IDLE_INITIAL_DELAY := 3.4 # how long it takes until idle screen
@@ -38,8 +37,6 @@ func _process(delta : float):
 	# updating status based on active
 	_pause_menu.active = _pause_active
 	_dialogue_box.active = _dialogue_active
-	if not active:
-		return
 	
 	# update quit timer if present, else catch quit attempts
 	if _trying_to_quit:
@@ -81,6 +78,7 @@ func _process(delta : float):
 	if _is_idle:
 		var progress := _idle_timer - _IDLE_INITIAL_DELAY
 		var a := progress * (1.0 / _IDLE_FADE_IN)
+		a = clampf(a, 0.0, 1.0)
 		_header.modulate.a = a
 		_footer.modulate.a = a
 	elif _idle_timer >= _IDLE_INITIAL_DELAY and _idle_timer <= _IDLE_INITIAL_DELAY * 3:
@@ -120,15 +118,17 @@ func toggle_pause():
 	_is_idle = false
 	_header.modulate.a = 1.0
 	_footer.modulate.a = 1.0
-	_header.visible = false
-	_footer.visible = false
-	can_idle = not can_idle
 	
 	# toggle pause menu
-	if not _pause_menu.visible:
-		_pause_menu.open()
 	_pause_menu.visible = not _pause_menu.visible
+	_header.visible = _pause_menu.visible
+	_footer.visible = _pause_menu.visible
 	_pause_active = _pause_menu.visible
+	can_idle = not _pause_menu.visible
+	if _pause_menu.visible:
+		_pause_menu.open()
+	else:
+		_pause_menu.close()
 
 # start dialogue
 # enables dialogue box and begins reading lines

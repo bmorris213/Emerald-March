@@ -22,31 +22,37 @@ font = ExtResource("4_m88sl")
 font_size = 32
 font_color = Color(0, 0, 0, 1)
 
-[node name="PauseMenu" type="Control"]
-layout_mode = 3
+[node name="PauseMenu" type="ColorRect"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.388235, 0.388235, 0.388235, 0.752941)
 script = ExtResource("1_43fmb")
 can_exit = true
-root_menu = NodePath("Base Menu")
+root_menu = NodePath("AspectRatioContainer/Base Menu")
 
-[node name="Base Menu" type="TextureRect" parent="."]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+ratio = 2.0
+stretch_mode = 1
+
+[node name="Base Menu" type="TextureRect" parent="AspectRatioContainer"]
+visible = false
+layout_mode = 2
 texture = ExtResource("2_w288l")
 expand_mode = 1
 script = ExtResource("3_87es6")
 h_locked = true
 row_size = 1
 
-[node name="Selector" type="TextureRect" parent="Base Menu"]
+[node name="Selector" type="TextureRect" parent="AspectRatioContainer/Base Menu"]
 layout_mode = 0
 offset_left = -26.0
 offset_top = -37.0
@@ -54,7 +60,7 @@ offset_right = 38.0
 offset_bottom = 27.0
 texture = ExtResource("3_vkm4v")
 
-[node name="Options" type="VBoxContainer" parent="Base Menu"]
+[node name="Options" type="VBoxContainer" parent="AspectRatioContainer/Base Menu"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.1
@@ -63,7 +69,65 @@ anchor_bottom = 1.0
 offset_left = 14.8
 offset_right = 14.8
 
-[node name="Option 3" type="Label" parent="Base Menu/Options"]
+[node name="Option 3" type="Label" parent="AspectRatioContainer/Base Menu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Status"
+label_settings = SubResource("LabelSettings_bxmwv")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+executor = NodePath("../../../..")
+method_name = "open"
+arguments = [NodePath("AspectRatioContainer/StatsMenu")]
+
+[node name="Option 2" type="Label" parent="AspectRatioContainer/Base Menu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Items"
+label_settings = SubResource("LabelSettings_jy1te")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+executor = NodePath("../../../..")
+method_name = "open"
+arguments = [NodePath("AspectRatioContainer/ItemMenu")]
+
+[node name="Option 1" type="Label" parent="AspectRatioContainer/Base Menu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Quit"
+label_settings = SubResource("LabelSettings_lalnw")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+
+[node name="StatsMenu" type="TextureRect" parent="AspectRatioContainer"]
+visible = false
+layout_mode = 2
+texture = ExtResource("2_w288l")
+expand_mode = 1
+script = ExtResource("3_87es6")
+h_locked = true
+row_size = 1
+
+[node name="Selector" type="TextureRect" parent="AspectRatioContainer/StatsMenu"]
+offset_left = -26.0
+offset_top = -37.0
+offset_right = 38.0
+offset_bottom = 27.0
+texture = ExtResource("3_vkm4v")
+
+[node name="Options" type="VBoxContainer" parent="AspectRatioContainer/StatsMenu"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_right = 0.4
+anchor_bottom = 1.0
+offset_left = 14.8
+offset_right = 14.8
+
+[node name="Option 3" type="Label" parent="AspectRatioContainer/StatsMenu/Options"]
 layout_mode = 2
 size_flags_vertical = 6
 text = "Status"
@@ -72,19 +136,71 @@ horizontal_alignment = 1
 vertical_alignment = 1
 script = ExtResource("5_yl6d1")
 
-[node name="Option 2" type="Label" parent="Base Menu/Options"]
+[node name="Option 2" type="Label" parent="AspectRatioContainer/StatsMenu/Options"]
 layout_mode = 2
 size_flags_vertical = 6
-text = "Items"
+text = "Status"
 label_settings = SubResource("LabelSettings_jy1te")
 horizontal_alignment = 1
 vertical_alignment = 1
 script = ExtResource("5_yl6d1")
 
-[node name="Option 1" type="Label" parent="Base Menu/Options"]
+[node name="Option 1" type="Label" parent="AspectRatioContainer/StatsMenu/Options"]
 layout_mode = 2
 size_flags_vertical = 6
-text = "Quit"
+text = "Status"
+label_settings = SubResource("LabelSettings_lalnw")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+
+[node name="ItemMenu" type="TextureRect" parent="AspectRatioContainer"]
+visible = false
+layout_mode = 2
+texture = ExtResource("2_w288l")
+expand_mode = 1
+script = ExtResource("3_87es6")
+h_locked = true
+row_size = 1
+
+[node name="Selector" type="TextureRect" parent="AspectRatioContainer/ItemMenu"]
+offset_left = -26.0
+offset_top = -37.0
+offset_right = 38.0
+offset_bottom = 27.0
+texture = ExtResource("3_vkm4v")
+
+[node name="Options" type="VBoxContainer" parent="AspectRatioContainer/ItemMenu"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_right = 0.4
+anchor_bottom = 1.0
+offset_left = 14.8
+offset_right = 14.8
+
+[node name="Option 3" type="Label" parent="AspectRatioContainer/ItemMenu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Item"
+label_settings = SubResource("LabelSettings_bxmwv")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+
+[node name="Option 2" type="Label" parent="AspectRatioContainer/ItemMenu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Item"
+label_settings = SubResource("LabelSettings_jy1te")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("5_yl6d1")
+
+[node name="Option 1" type="Label" parent="AspectRatioContainer/ItemMenu/Options"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Item"
 label_settings = SubResource("LabelSettings_lalnw")
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -76,10 +76,6 @@ func _switch_state(new_state : _GameState):
 	match _game_state:
 		_GameState.inactive:
 			return
-		_GameState.paused:
-			_global_ui.active = false
-		_GameState.dialogue:
-			_global_ui.active = false
 		_:
 			_scene_manager.current_scene.active = false
 	_game_state = _GameState.inactive
@@ -94,9 +90,9 @@ func _switch_state(new_state : _GameState):
 		_GameState.inactive:
 			return
 		_GameState.paused:
-			_global_ui.active = true
+			pass
 		_GameState.dialogue:
-			_global_ui.active = true
+			pass
 		_:
 			_scene_manager.current_scene.active = true
 
