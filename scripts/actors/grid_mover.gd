@@ -1,5 +1,5 @@
 # Emerald March
-# 07-14-2025
+# 07-15-2025
 # Brian Morris
 
 extends Node
@@ -31,7 +31,6 @@ func _physics_process(delta):
 	# check if movement would finish progress
 	if distance_to_move >= remaining_distance:
 		_current_position = _target_position
-		GameManager.scene_manager.at_new_tile(_current_position)
 		return
 	
 	# move

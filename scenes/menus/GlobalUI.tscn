@@ -1,17 +1,18 @@
 [gd_scene load_steps=8 format=3 uid="uid://dbnl1ecoo68hy"]
 
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="1_kdjdg"]
+[ext_resource type="Script" path="res://scenes/menus/global_ui.gd" id="1_vcwu2"]
 [ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="2_qvajt"]
-[ext_resource type="PackedScene" uid="uid://dx5la856bxawq" path="res://scenes/menus/DialogueBox.tscn" id="3_4gmpg"]
+[ext_resource type="PackedScene" uid="uid://covilc32xt84c" path="res://scenes/menus/DialogueBox.tscn" id="3_4gmpg"]
 [ext_resource type="FontFile" uid="uid://nln3rhxol8vf" path="res://assets/fonts/Orange Kid.otf" id="3_c8jiv"]
 [ext_resource type="PackedScene" uid="uid://bpakvvgy2nq1q" path="res://scenes/menus/PauseMenu.tscn" id="5_5mii0"]
-[ext_resource type="PackedScene" uid="uid://cjdta2do0gcy6" path="res://scenes/menus/QuickMenu.tscn" id="6_ehn1o"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_puine"]
+[sub_resource type="LabelSettings" id="LabelSettings_t1h8m"]
 font = ExtResource("3_c8jiv")
 font_size = 80
 
 [node name="GlobalUI" type="CanvasLayer"]
+script = ExtResource("1_vcwu2")
 
 [node name="ScreenOrganizer" type="VBoxContainer" parent="."]
 anchors_preset = 15
@@ -23,12 +24,12 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Header" type="ColorRect" parent="ScreenOrganizer"]
+visible = false
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 color = Color(0, 0, 0, 1)
 
 [node name="ToolTipBox" type="TextureRect" parent="ScreenOrganizer/Header"]
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.25
@@ -58,50 +59,17 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="QuittingWarning" type="Control" parent="ScreenOrganizer/Viewport"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="ColorRect" type="ColorRect" parent="ScreenOrganizer/Viewport/QuittingWarning"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.258824, 0.258824, 0.258824, 0.470588)
-
-[node name="Warning" type="Label" parent="ScreenOrganizer/Viewport/QuittingWarning/ColorRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-label_settings = SubResource("LabelSettings_puine")
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DialogueBox" parent="ScreenOrganizer/Viewport" instance=ExtResource("3_4gmpg")]
-visible = false
-layout_mode = 1
-
 [node name="PauseMenu" parent="ScreenOrganizer/Viewport" instance=ExtResource("5_5mii0")]
 visible = false
 layout_mode = 1
 offset_top = -4.0
 offset_bottom = -4.0
 
-[node name="QuickMenu" parent="ScreenOrganizer/Viewport" instance=ExtResource("6_ehn1o")]
-visible = false
+[node name="DialogueBox" parent="ScreenOrganizer/Viewport" instance=ExtResource("3_4gmpg")]
 layout_mode = 1
 
 [node name="Footer" type="ColorRect" parent="ScreenOrganizer"]
+visible = false
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 color = Color(0, 0, 0, 1)
@@ -112,3 +80,43 @@ anchors_preset = -1
 anchor_left = 0.15
 anchor_right = 0.85
 anchor_bottom = 1.0
+
+[node name="QuittingWarning" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="QuittingWarning"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.258824, 0.258824, 0.258824, 0.807843)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="QuittingWarning/ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Warning" type="Label" parent="QuittingWarning/ColorRect/VBoxContainer"]
+layout_mode = 2
+text = "Warning: progress will not be saved!"
+label_settings = SubResource("LabelSettings_t1h8m")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timer" type="Label" parent="QuittingWarning/ColorRect/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+label_settings = SubResource("LabelSettings_t1h8m")
+horizontal_alignment = 1
+vertical_alignment = 1

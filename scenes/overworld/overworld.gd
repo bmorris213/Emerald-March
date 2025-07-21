@@ -1,5 +1,5 @@
 # Emerald March
-# 07-14-2025
+# 07-22-2025
 # Brian Morris
 
 extends Node2D
@@ -9,28 +9,25 @@ extends Node2D
 
 const SCENE_NAME := Constants.SCENE_ID.overworld
 
-# player node references
-@onready var _player = $Player
-var _animator
-var _state_machine
+# player control
+var active := false
 var player_has_boat := false
 var player_in_cart := false
+var _action_buffered := false
 
-# tilemap node references
-@onready var _ground_layer := $GroundLayer
-@onready var _terrain_layer := $TerrainLayer
-@onready var _collision_layer := $CollisionLayer
-@onready var _location_layer := $LocationLayer
+# node references
+@onready var _player = $Player
+@onready var _animator := $Player/AnimationTree
+@onready var _state_machine = $Player/AnimationTree.get("parameters/playback")
 
 # values for player
-var is_walking := false # determines sprite animation to play
-var _previous_walking_state := false
-var steps := 0
+var _is_walking := false
+var _has_been_walking := false # don't interrupt walking animations
+var _is_scoping := false
+var _steps := 0
 
-# terrain values
-
-# interactable references stored by location
-var _locations := {}
+# overworld region data
+var _current_region
 
 # test locations
 var locations = [
@@ -91,224 +88,176 @@ var locations = [
 	)
 ]
 
-enum GROUND_TYPES {
-	normal,
-	hazardous,
-	dangerous,
-	lethal,
-	shallow_water,
-	deep_water,
-	none
-}
-const GROUND_ATLAS_COORDS := {
-	Vector2i(0,1): GROUND_TYPES.normal,
-	Vector2i(0,2): GROUND_TYPES.hazardous,
-	Vector2i(0,3): GROUND_TYPES.dangerous,
-	Vector2i(0,4): GROUND_TYPES.lethal,
-	Vector2i(5,2): GROUND_TYPES.shallow_water,
-	Vector2i(5,3): GROUND_TYPES.deep_water
-}
-const GROUND_DANGER_MULTIPLIERS := {
-	GROUND_TYPES.normal: 1.0,
-	GROUND_TYPES.hazardous: 1.2,
-	GROUND_TYPES.dangerous: 1.7,
-	GROUND_TYPES.lethal: 2.0,
-	GROUND_TYPES.shallow_water: 1.5
-}
-enum TERRAIN_TYPES {
-	plains,
-	roads,
-	wilds,
-	hills,
-	woods,
-	mountains
-}
-const TERRAIN_ATLAS_COORDS := {
-	Vector2i(1,1): TERRAIN_TYPES.wilds,
-	Vector2i(1,2): TERRAIN_TYPES.hills,
-	Vector2i(1,3): TERRAIN_TYPES.woods,
-	Vector2i(1,4): TERRAIN_TYPES.mountains
-}
-const TERRAIN_MOVE_SPEEDS := {
-	TERRAIN_TYPES.plains : 2.4,
-	TERRAIN_TYPES.roads : 2.9,
-	TERRAIN_TYPES.wilds : 2.0,
-	TERRAIN_TYPES.hills : 1.6,
-	TERRAIN_TYPES.woods : 1.6,
-	TERRAIN_TYPES.mountains : 1.2
-}
-const TERRAIN_ENCOUNTER_RATES := {
-	TERRAIN_TYPES.plains : 0.03,
-	TERRAIN_TYPES.roads : 0.01,
-	TERRAIN_TYPES.wilds : 0.06,
-	TERRAIN_TYPES.hills : 0.07,
-	TERRAIN_TYPES.woods : 0.08,
-	TERRAIN_TYPES.mountains : 0.12
-}
-
 # set up
 # fills in the world using retrieved data from the files
 func set_up(scene_data):
-	for location in locations:
-		_locations[location.position] = location
-		if location.hidden:
-			_location_layer.set_cell(location.position, -1, Constants.OVERWORLD_EMPTY_TILE)
+	print(scene_data)
+	_current_region = Region.new(self) # WIP
+	_current_region.set_up_region(locations)
 
 # ready
 # called once at startup
 func _ready():
-	_animator = $Player/AnimationTree
-	_state_machine = _animator.get("parameters/playback")
 	_player.teleport(_player.global_position)
-	var grid_pos = _ground_layer.local_to_map(_player.global_position)
-	var position_data = _get_position_data(grid_pos)
 
 # process
 # called once per frame
-func _process(_delta):
-	# fix player sprite to current position of mover
-	_player.global_position = _player.get_location()
+func _process(delta):
+	if not active:
+		return
 	
-	# update move speed
-	var position_data = _get_position_data(_player.global_position)
-	_player.move_speed = _ground_layer.tile_set.tile_size.x\
-		* TERRAIN_MOVE_SPEEDS[position_data["terrain"]]
+	# fix player sprite to current position of mover and update data
+	_player.global_position = _player.get_location()
+	_player.move_speed = _current_region.get_speed(_player.global_position)
 	
 	# update sprite animation if walking value changes
-	if is_walking != _previous_walking_state:
-		_previous_walking_state = is_walking
-		if is_walking:
+	if _is_walking != _has_been_walking:
+		_has_been_walking = _is_walking
+		if _is_walking:
 			_state_machine.travel("Walking")
 		else:
 			_state_machine.travel("Idle")
+	
+	_handle_input()
 
-# try move
-# attempts a move in the given direction
-func try_move(direction : Vector2i) -> bool:
-	_player.global_position = _player.get_location()
-	var target = _player.global_position + Vector2(direction * _ground_layer.tile_set.tile_size)
-	if _tile_is_walkable(target):
-		_player.move_to(target)
-		is_walking = true
-		return true
-	return false
+# handle input
+# manages input and user actions
+func _handle_input():
+	# buffer actions and movement until movement ends
+	if _is_walking:
+		if Input.is_action_just_pressed("select"):
+			_action_buffered = true
+		
+		# test for the end of movement
+		if not _player.is_moving():
+			_finish_move()
+		return
+	
+	# check for a stored action buffer
+	if _action_buffered:
+		_try_select()
+		_action_buffered = false
+	
+	# check select action
+	if Input.is_action_just_pressed("select"):
+		_try_select()
+	
+	# check for movement
+	var dir := Vector2i.ZERO
+	if Input.is_action_pressed("up"):
+		dir = Vector2i.UP
+	elif Input.is_action_pressed("down"):
+		dir = Vector2i.DOWN
+	elif Input.is_action_pressed("left"):
+		dir = Vector2i.LEFT
+	elif Input.is_action_pressed("right"):
+		dir = Vector2i.RIGHT
+	if dir != Vector2i.ZERO:
+		if _can_move(dir):
+			_move_player(dir)
+		_update_player_facing(dir)
 
-# update player facing
-# changes the animation direction for the player
-func update_player_facing(direction : Vector2i):
-	_animator.set("parameters/Idle/blend_position", direction)
-	_animator.set("parameters/Walking/blend_position", direction)
-
-# took step
-# function called after every tile of movement
-func took_step(_position : Vector2):
-	steps += 1
-	var position_data = _get_position_data(_position)
-	
-	# try combat
-	var r = GameManager.random_generator.randf()
-	var ground_danger = GROUND_DANGER_MULTIPLIERS[position_data["ground"]]
-	var encounter_rate = TERRAIN_ENCOUNTER_RATES[position_data["terrain"]]
-	print('rand:', r, '\trate:', encounter_rate, '\tdanger:', ground_danger)
-	print(encounter_rate * ground_danger)
-	if r < encounter_rate * ground_danger:
-		var string_ground = GROUND_TYPES.keys()[position_data["ground"]]
-		var string_terrain = TERRAIN_TYPES.keys()[position_data["terrain"]]
-		GameManager.scene_manager.start_battle(position_data)
-
-# get interact data
-# returns any interaction custom data at a certain tile position
-func get_interact_data() -> Interactable:
-	# check on top of player
-	var grid_pos = _ground_layer.local_to_map(_player.get_location(true))
-	
-	# check in front of player
-	if not grid_pos in _locations:
-			grid_pos += Vector2i(_animator.get("parameters/Idle/blend_position"))
-			# check in front of player only if there's collision in front of player
-			var tile_data = _collision_layer.get_cell_tile_data(grid_pos)
-			if not tile_data:
-				grid_pos = null
-	
-	if grid_pos in _locations:
-		return _locations[grid_pos]
-	
-	return Interactable.new() # the empty interactable
-
-# get position data
-# returns an object representing the tile at a certain position
-func _get_position_data(pos : Vector2) -> Dictionary:
-	# grab tilemap position
-	var grid_pos = _ground_layer.local_to_map(pos)
-	
-	# grab atlas coordinates
-	var ground = _ground_layer.get_cell_atlas_coords(grid_pos)
-	var terrain = _terrain_layer.get_cell_atlas_coords(grid_pos)
-	var collision = _collision_layer.get_cell_atlas_coords(grid_pos)
-	
-	var position_data := {}
-	
-	# assign ground type
-	if ground == Vector2i(-1, -1) or not GROUND_ATLAS_COORDS.has(ground):
-		position_data["ground"] = GROUND_TYPES.none
-	else:
-		position_data["ground"] = GROUND_ATLAS_COORDS[ground]
-	# assign terrain type
-	if terrain == Vector2i(-1, -1):
-		position_data["terrain"] = TERRAIN_TYPES.plains
-	elif terrain.x < 5 and terrain.x > 1 and terrain.y > 0:
-		position_data["terrain"] = TERRAIN_TYPES.roads
-	elif not TERRAIN_ATLAS_COORDS.has(terrain):
-		position_data["terrain"] = TERRAIN_TYPES.plains
-	else:
-		position_data["terrain"] = TERRAIN_ATLAS_COORDS[terrain]
-	# check for collision
-	position_data["collision"] = collision != Vector2i(-1,-1)
-	
-	return position_data
-
-# tile is walkable
+# can move
 # returns true if tile could be traversed by the player
-func _tile_is_walkable(target : Vector2) -> bool:
-	var target_details = _get_position_data(target)
+func _can_move(direction : Vector2) -> bool:
+	var target = _player.global_position + Vector2(direction * _current_region.tile_size)
 	
 	# validate terrain
-	if player_in_cart and not target_details["terrain"] == TERRAIN_TYPES.roads:
+	if player_in_cart and not _current_region.get_terrain(target) == Region.TerrainType.roads:
 		return false
 	
 	# validate ground
-	var ground = target_details["ground"]
-	if ground == GROUND_TYPES.none or ground == GROUND_TYPES.deep_water:
+	var ground = _current_region.get_ground(target)
+	if ground == Region.GroundType.none or ground == Region.GroundType.deep_water:
 		return false
-	if ground == GROUND_TYPES.shallow_water and not player_has_boat:
+	if ground == Region.GroundType.shallow_water and not player_has_boat:
 		return false
 	
 	# validate collision
-	return not target_details["collision"]
+	return not _current_region.has_collision(target)
 
-# set tile sprite
-# reveal a hidden tile by finding its sprite from its data
-func set_tile_sprite(target : Vector2i):
-	var tile_pos = _collision_layer.local_to_map(_player.get_location(true))
-	print('_location_layer.set_cell(tile_pos, -1, target)')
+# move player
+# sets the player's grid mover to target the next tile over
+func _move_player(direction : Vector2i):
+	var target = _player.global_position + Vector2(direction * _current_region.tile_size)
+	_player.move_to(target)
+	_is_walking = true
 
-# remove tile
-# deletes a tile at a specific position from the locations layer
-func remove_tile(pos : Vector2i = _player.get_location(true)):
-	print('delete tile')
+# update player facing
+# changes the animation direction for the player
+func _update_player_facing(direction : Vector2i):
+	_animator.set("parameters/Idle/blend_position", direction)
+	_animator.set("parameters/Walking/blend_position", direction)
 
-# start scoping
-# initiates scope mode
-func start_scoping():
-	print('scope')
+# finish move
+# function called when movement reaches a new tile
+func _finish_move():
+	_is_walking = false
+	_steps += 1
+	
+	# try to initiate combat
+	var r = GameManager.random_generator.randf()
+	var encounter_chance = _current_region.get_encounter_chance(_player.get_location(false))
+	if r < encounter_chance:
+		_action_buffered = false
+		GameManager.start_battle(_current_region.get_battle_data(_player.get_location(false)))
 
-# end scoping
-# finishes scope mode
-func end_scoping():
-	print('scope not')
+# try select
+# attempt to interact with a location
+func _try_select():
+	var interactable = _current_region.get_interactable(_player.global_position)
+	
+	if interactable.type == Interactable.INTERACT_TYPES.empty:
+		_read_data()
+		return
+	
+	match interactable.type:
+		Interactable.INTERACT_TYPES.point_of_interest:
+			_read_data(interactable.key_string, interactable.description)
+		Interactable.INTERACT_TYPES.switch:
+			_toggle_switch(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.container:
+			_open_container(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.entrance:
+			_take_entrance(interactable.key_string, interactable.description, interactable.target_data)
+		Interactable.INTERACT_TYPES.npc:
+			_speak_to(interactable.key_string, interactable.description, interactable.target_data)
+		_:
+			push_error("Overworld: Unknown type of interactable!")
+			return
 
-# move scope
-# shifts position of scope box
-func move_scope(direction : Vector2i):
-	if direction != Vector2i.ZERO:
-		print(direction)
+# read data
+# interaction with a point of interest to just narate something
+func _read_data(_name : String = "", description : String = ""):
+	var line
+	
+	if _name == "" and description == "":
+		line = Dialogue.new("Searching...", "Nothing of interest found!")
+	else:
+		line = Dialogue.new(_name, description)
+	
+	GameManager.start_dialogue([line])
+
+# toggle switch
+# use a functioning switch to change something about the scene
+func _toggle_switch(_name : String, description : String, target : Dictionary):
+	print("switch")
+	print(_name, description, target) # WIP
+
+# open container
+# interaction with a container to potentially gain items
+func _open_container(_name : String, description : String, target : Dictionary):
+	print("container")
+	print(_name, description, target) # WIP
+
+# take entrance
+# use an interactable to initiate a scene transition
+func _take_entrance(_name : String, description : String, target : Dictionary):
+	print("entrance")
+	print(_name, description, target) # WIP
+
+# speak to
+# interact with an npc, initiating a dialogue tree
+func _speak_to(_name : String, description : String, target : Dictionary):
+	print("npc")
+	print(_name, description, target) # WIP

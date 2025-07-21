@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://bpakvvgy2nq1q"]
 
-[ext_resource type="Script" path="res://scripts/menus/menu.gd" id="1_cug21"]
+[ext_resource type="Script" path="res://scripts/menus/menu_tree.gd" id="1_43fmb"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="2_w288l"]
 [ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="3_vkm4v"]
 [ext_resource type="FontFile" uid="uid://nln3rhxol8vf" path="res://assets/fonts/Orange Kid.otf" id="4_m88sl"]
@@ -28,10 +28,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_cug21")
-h_locked = true
-row_size = 1
-offset = Vector2(-40, 0)
+script = ExtResource("1_43fmb")
 
 [node name="Background" type="TextureRect" parent="."]
 layout_mode = 1

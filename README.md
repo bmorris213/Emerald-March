@@ -1,49 +1,45 @@
-# Rise of the Dragon King
+## Chronicles of Verumn: Emerald March
 An old school rpg blending FF1, Warriors of the Eternal Sun, Etrian Odyssey, and Shining Force set in the fantasy world of Verumn
-
-# Folder Organization
-resources - storing raw media for use in the game - images, audio, and other
-data - JSON files for use in game
-	maps - metadata on regions, terrains, loot pools, etc for use in overworld, town, and dungeons alike
-scenes - storing all window states of the game
-	system - the base scenes (main, loading, splash, settings)
-scripts - for every programming file not associated directly with other objects
-scenes - where gameplay happens
-prefabs - reusable templates
-UI - easily skin modular windows, menus, layouts, and HUD
-globals - persistant, game-wide logic, flags, inventory, etc
-
-# Program Execution
-
-Main
-Game startup and management happens within the main.tscn scene, and scene transitions, globals, and other game-wide logic is handled here
-	handles Scene Transitions, always the active loaded scene
-	allows for persistant UI layers across scene transitions
-	allows globals that are always loaded in
-	allows for persistant audio management
-	misc overlay systems: dialogue, pause menu, tutorials, input prompts
-
-Game State
-	auto-load global for managing gamewide stateful information
-	contains current scene
-
-Main Menu
-	Game manager. Handles storage, deletion, and loading of save files
-	access options, extras, credits etc
-	new game action
-	plays intro scenematic
-
-Save File Manager
-	used to save, load, and delete save game files
-
-Overworld
-	For the sake of development, this is the "outer most" scene
+Game 1 of the Chronicles of Verumn saga.
+Liberate the world of Verumn from the tyranical rule of the invincible Dragons!
 
 # Gameplay
 
-# controls
+Move around the OVERWORLD map to explore the regions of Verumn!
+Moving to the edge of the map will attempt to begin traveling to the next region over, a costly and long (mostly uneventful) travel
+View the world map in your pause menu to see all the different kingdoms and their regions and how they interconnect.
+Beware that travel takes time, and is incredibly dangerous at night. Camping costs resources, but it's the best way to pass the night.
+Roads are mostly safe, and the edges of the wilderness in each region contain more dangerous monsters hiding in the dark.
+If you find something on a tile (like a dungeon or a town), you can interact to enter into FREE ROAM mode!
+
+FREE ROAM is where exploration is far less costly or dangerous! Feel free to wander around inspecting stuff all you'd like.
+You can explore towns, clearings in the woods, entrances to temples or dungeons, etc.
+Once you find a dungeon, it will take you to a new type of gameplay.
+
+A DUNGEON is a unique exploration experience. Wander around a labyrinth with no map, filled with dangerous enemies who wander the rooms and halls.
+Find hidden entrances, treasure hidden in mundane furnature, or traps lying in wait.
+
+Your goal in this game is to overthrow the Dragons who rule all of Verumn in tyrany.
+This game is open almost from the start for exploration, and you can go about liberating Verumn any way you'd like!
+Just beware; it's dangerous out there by yourself, and the great task of freeing Verumn would be easier if you found friends and allies to help you.
+Good luck!
+
+# Controls
+
 movement: arrow keys (left, right, up, down)
 select : z
 cancel : x
 menu : c
-quit : escape (exit program)
+quit : escape (hold)
+
+Select is always the "okay" or "interact" action.
+
+Menu should, for most cases, just open up the pause menu, but for the main menu, it'll try quitting
+And for the battle screen it actually enables / disables auto-battle.
+
+Cancel is the "back" button for any active menu.
+But in the overworld it opens and closes "scope mode" to help you plan out your explorations of Verumn.
+And in dungeons and free roam mode it opens up a "quick menu" for actions to take.
+For instance, the Quick Action of "Talk" opens up dialogue about whatever you're inspecting with your current party members!
+Or, you can use the Quick Action of "Talk" to speak to NPCs instead of just inspecting them.
+You can assign other Quick Actions such as casting a specific spell or using a specific item.

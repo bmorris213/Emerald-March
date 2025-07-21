@@ -1,19 +1,14 @@
-[gd_scene load_steps=8 format=3 uid="uid://ce8yfikss8rlv"]
+[gd_scene load_steps=5 format=3 uid="uid://ce8yfikss8rlv"]
 
-[ext_resource type="Script" path="res://scripts/managers/menu_manager.gd" id="1_34wer"]
 [ext_resource type="Texture2D" uid="uid://dqdtcsgjhmdhe" path="res://assets/images/main menu.png" id="1_dsc1q"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="2_6rf2x"]
 [ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="3_s7ae8"]
-[ext_resource type="Script" path="res://scripts/menus/menu.gd" id="4_12mk8"]
-[ext_resource type="Script" path="res://scripts/system/test_option.gd" id="5_n3m5k"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_vlbxt"]
 font_size = 80
 font_color = Color(0, 0, 0, 1)
 
-[node name="MainMenu" type="Node2D" node_paths=PackedStringArray("base_menu")]
-script = ExtResource("1_34wer")
-base_menu = NodePath("CanvasLayer/background/menu")
+[node name="MainMenu" type="Node2D"]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -26,7 +21,7 @@ grow_vertical = 2
 texture = ExtResource("1_dsc1q")
 expand_mode = 1
 
-[node name="menu" type="TextureRect" parent="CanvasLayer/background" node_paths=PackedStringArray("options", "selector_icon")]
+[node name="menu" type="TextureRect" parent="CanvasLayer/background"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.1
@@ -36,10 +31,6 @@ anchor_bottom = 0.95
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_6rf2x")
-script = ExtResource("4_12mk8")
-options = [NodePath("VBoxContainer/option one2"), NodePath("VBoxContainer/option one"), NodePath("VBoxContainer/option one4"), NodePath("VBoxContainer/option one3")]
-selector_icon = NodePath("selector")
-offset = Vector2(-150, 0)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/background/menu"]
 layout_mode = 1
@@ -55,7 +46,6 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("2_6rf2x")
-script = ExtResource("5_n3m5k")
 
 [node name="Label" type="Label" parent="CanvasLayer/background/menu/VBoxContainer/option one2"]
 layout_mode = 1
@@ -72,7 +62,6 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("2_6rf2x")
-script = ExtResource("5_n3m5k")
 
 [node name="Label" type="Label" parent="CanvasLayer/background/menu/VBoxContainer/option one"]
 layout_mode = 1
@@ -89,7 +78,6 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("2_6rf2x")
-script = ExtResource("5_n3m5k")
 
 [node name="Label" type="Label" parent="CanvasLayer/background/menu/VBoxContainer/option one4"]
 layout_mode = 1
@@ -106,7 +94,6 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("2_6rf2x")
-script = ExtResource("5_n3m5k")
 
 [node name="Label" type="Label" parent="CanvasLayer/background/menu/VBoxContainer/option one3"]
 layout_mode = 1

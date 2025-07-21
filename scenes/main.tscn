@@ -9,6 +9,5 @@ script = ExtResource("1_xiocn")
 [node name="ActiveScene" type="Node" parent="."]
 
 [node name="GlobalUI" parent="." instance=ExtResource("2_e4v83")]
-visible = false
 
 [node name="GlobalAudio" type="AudioStreamPlayer" parent="."]
