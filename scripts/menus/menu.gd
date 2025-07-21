@@ -22,9 +22,9 @@ const _OPTION_CONTAINER_NAME := "Options"
 # control variables
 var offset := Vector2(-20, 0)
 var active := false
-var _v_locked := false
-var _h_locked := false
-var _row_size := 0
+@export var v_locked := false
+@export var h_locked := false
+@export var row_size := 0
 
 # movement variables
 var _direction := Vector2i.ZERO
@@ -135,12 +135,12 @@ func _move_selector(direction : Vector2i):
 	
 	var amount = 1
 	if direction == Vector2i.UP or direction == Vector2i.DOWN:
-		amount = _row_size * direction.y
-		if _v_locked:
+		amount = row_size * direction.y
+		if v_locked:
 			amount = 0
 	elif direction == Vector2i.LEFT or direction == Vector2i.RIGHT:
 		amount = direction.x
-		if _h_locked:
+		if h_locked:
 			amount = 0
 	_selected_index = (_selected_index + amount + _options.size()) % _options.size()
 	call_deferred("_update_selection")
@@ -158,8 +158,8 @@ func _on_select():
 # lock movement
 # disables selector movement along one or both axis
 func lock_movement(lock_v : bool = true, lock_h : bool = true):
-	_v_locked = lock_v
-	_h_locked = lock_h
+	v_locked = lock_v
+	h_locked = lock_h
 
 # move selector to
 # manually choose a selection from the menu
@@ -188,3 +188,8 @@ func unset_choices(full_delete : bool = false):
 # turns on or off the selector icon
 func toggle_selector():
 	_selector_icon.visible = not _selector_icon.visible
+
+# selector is on
+# returns true if the selector is visible
+func selector_is_on() -> bool:
+	return _selector_icon.visible

@@ -16,6 +16,8 @@ extends CanvasLayer
 @onready var _dialogue_box : Node = $ScreenOrganizer/Viewport/DialogueBox
 
 var active : bool = false
+var _pause_active : bool = false
+var _dialogue_active : bool = false
 
 # quit action control variables
 var _quit_timer := 0.0
@@ -34,8 +36,8 @@ const _IDLE_FADE_IN := 1.2 # how long it takes for the idle screen to fade in
 # called once per frame
 func _process(delta : float):
 	# updating status based on active
-	_pause_menu.active = active
-	_dialogue_box.active = active
+	_pause_menu.active = _pause_active
+	_dialogue_box.active = _dialogue_active
 	if not active:
 		return
 	
@@ -118,14 +120,15 @@ func toggle_pause():
 	_is_idle = false
 	_header.modulate.a = 1.0
 	_footer.modulate.a = 1.0
+	_header.visible = false
+	_footer.visible = false
+	can_idle = not can_idle
 	
 	# toggle pause menu
 	if not _pause_menu.visible:
 		_pause_menu.open()
 	_pause_menu.visible = not _pause_menu.visible
-	_header.visible = false
-	_footer.visible = false
-	can_idle = not can_idle
+	_pause_active = _pause_menu.visible
 
 # start dialogue
 # enables dialogue box and begins reading lines
@@ -142,6 +145,7 @@ func start_dialogue(lines : Array[Dialogue]):
 	# toggle dialogue box and begin dialogue
 	_dialogue_box.visible = true
 	_dialogue_box.start_dialogue(lines)
+	_dialogue_active = true
 
 # end dialogue
 # disables dialogue box
@@ -150,3 +154,4 @@ func end_dialogue():
 	can_idle = true
 	_dialogue_box.visible = false
 	_dialogue_box.end_dialogue()
+	_dialogue_active = false

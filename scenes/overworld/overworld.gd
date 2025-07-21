@@ -102,7 +102,9 @@ func _ready():
 
 # process
 # called once per frame
-func _process(delta):
+func _process(_delta):
+	_player.active = active
+	
 	if not active:
 		return
 	

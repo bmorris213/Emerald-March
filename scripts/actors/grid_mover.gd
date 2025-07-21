@@ -1,5 +1,5 @@
 # Emerald March
-# 07-15-2025
+# 07-22-2025
 # Brian Morris
 
 extends Node
@@ -11,6 +11,7 @@ class_name GridMover
 
 # external factors
 var move_speed : int
+var active : bool = true
 
 # control variables
 var _current_position := Vector2.ZERO
@@ -19,6 +20,9 @@ var _target_position := Vector2.ZERO
 # physical process
 # is called once per frame of the physics engine
 func _physics_process(delta):
+	if not active:
+		return
+	
 	# no movement is needed
 	if _current_position == _target_position:
 		return
