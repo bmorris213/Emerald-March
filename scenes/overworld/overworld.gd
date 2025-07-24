@@ -7,8 +7,6 @@ extends Node2D
 # overworld
 # handles generating the overworld region map from data and managing interactions with that map
 
-const SCENE_NAME := Constants.SCENE_ID.overworld
-
 # player control
 var active := false
 var player_has_boat := false
@@ -29,71 +27,12 @@ var _steps := 0
 # overworld region data
 var _current_region
 
-# test locations
-var locations = [
-	Interactable.new(
-		Vector2i(7,14), "West Entrance", "The path continues from here around the entire globe.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "overworld",\
-			"target_entrance" : "East Entrance"}
-	),
-	Interactable.new(
-		Vector2i(38,14), "East Entrance", "The path continues from here around the entire globe.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "overworld",\
-			"target_entrance" : "West Entrance"}
-	),
-	Interactable.new(
-		Vector2i(14,10), "First Town", "A small rural village in the hills.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "location",\
-			"target_entrance" : ""}
-	),
-	Interactable.new(
-		Vector2i(28,10), "Cave Tunnel", "The entrance to a cave is visible here.",
-		Interactable.INTERACT_TYPES.switch, { "target_action" : "teleport",\
-			"target_data" : Vector2i(30,10)}
-	),
-	Interactable.new(
-		Vector2i(12,13), "Forest Clearing", "A peaceful clearing in the woods.",
-		Interactable.INTERACT_TYPES.point_of_interest, {}
-	),
-	Interactable.new(
-		Vector2i(34,15), "Cliff Edge", "This cliff overlooks the entirety of the forest below.",
-		Interactable.INTERACT_TYPES.point_of_interest, {}
-	),
-	Interactable.new(
-		Vector2i(25,15), "Mountain Dungeon", "Deep in the mountain woods can be found sacred ruins.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "dungeon",\
-			"target_entrance" : ""}
-	),
-	Interactable.new(
-		Vector2i(20,20), "Hidden Village", "A small rural village in the hills.",
-		Interactable.INTERACT_TYPES.entrance, { "target_scene" : "location",\
-			"target_entrance" : ""}, true
-	),
-	Interactable.new(
-		Vector2i(12,16), "Hidden Chest", "In a hollow in a tree there is a small pouch.",
-		Interactable.INTERACT_TYPES.container, { "contents" : {"name" : "rock", "count" : 1}}, true
-	),
-	Interactable.new(
-		Vector2i(17,7), "Chest", "There is an overturned carriage with an unopened chest.",
-		Interactable.INTERACT_TYPES.container, { "contents" : {"name" : "key", "count" : 1}}, false, true
-	),
-	Interactable.new(
-		Vector2i(27,13), "Locked Gate", "The path into the mountains is blocked by a locked gate.",
-		Interactable.INTERACT_TYPES.switch, { "target_action" : "unlock_self",\
-			"key" : "key"}, false, true
-	),
-	Interactable.new(
-		Vector2i(10,10), "Mother", "This is where you came from, just now...",
-		Interactable.INTERACT_TYPES.npc
-	)
-]
-
 # set up
 # fills in the world using retrieved data from the files
 func set_up(scene_data):
 	print(scene_data)
 	_current_region = Region.new(self) # WIP
-	_current_region.set_up_region(locations)
+	_current_region.set_up_region()
 
 # ready
 # called once at startup
@@ -103,13 +42,12 @@ func _ready():
 # process
 # called once per frame
 func _process(_delta):
-	_player.active = active
+	_player.global_position = _player.get_location()
 	
 	if not active:
 		return
 	
 	# fix player sprite to current position of mover and update data
-	_player.global_position = _player.get_location()
 	_player.move_speed = _current_region.get_speed(_player.global_position)
 	
 	# update sprite animation if walking value changes
@@ -207,26 +145,7 @@ func _finish_move():
 # try select
 # attempt to interact with a location
 func _try_select():
-	var interactable = _current_region.get_interactable(_player.global_position)
-	
-	if interactable.type == Interactable.INTERACT_TYPES.empty:
-		_read_data()
-		return
-	
-	match interactable.type:
-		Interactable.INTERACT_TYPES.point_of_interest:
-			_read_data(interactable.key_string, interactable.description)
-		Interactable.INTERACT_TYPES.switch:
-			_toggle_switch(interactable.key_string, interactable.description, interactable.target_data)
-		Interactable.INTERACT_TYPES.container:
-			_open_container(interactable.key_string, interactable.description, interactable.target_data)
-		Interactable.INTERACT_TYPES.entrance:
-			_take_entrance(interactable.key_string, interactable.description, interactable.target_data)
-		Interactable.INTERACT_TYPES.npc:
-			_speak_to(interactable.key_string, interactable.description, interactable.target_data)
-		_:
-			push_error("Overworld: Unknown type of interactable!")
-			return
+	_read_data()
 
 # read data
 # interaction with a point of interest to just narate something

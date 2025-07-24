@@ -65,10 +65,6 @@ func _process(delta : float):
 			_timer = 0.0
 			_delay = max(_MIN_DELAY, _delay - _ACCELERATION)
 	
-	# handle select calls
-	if Input.is_action_just_pressed("select"):
-		_on_select()
-	
 	_handle_menu_movement()
 
 # handle menu movement
@@ -147,7 +143,7 @@ func _move_selector(direction : Vector2i):
 
 # on select
 # call the function on the currently chosen option
-func _on_select():
+func on_select():
 	if not _options:
 		return
 	if _selected_index >= _options.size():
@@ -182,7 +178,7 @@ func add_option(choice : Option):
 # unset choices
 # delete all menu choices
 func unset_choices(full_delete : bool = false):
-	for option in _options:
+	for option in _options.duplicate():
 		if option.temp or full_delete:
 			option.queue_free()
 			_options.erase(option)

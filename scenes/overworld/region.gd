@@ -2,7 +2,7 @@
 # 07-22-2025
 # Brian Morris
 
-extends Node
+extends Resource
 
 # Region
 # encapsulates a single map on the overworld the player can explore
@@ -16,7 +16,7 @@ var _collision_layer
 var _location_layer
 var tile_size := 16
 
-# interactables by location
+# special tiles on the map
 var _locations := {}
 
 # Ground Data
@@ -88,7 +88,7 @@ func _init(_root : Node):
 
 # set up region
 # builds out a region map from data
-func set_up_region(data : Array):
+func set_up_region(data : Array = []):
 	for location in data:
 		_locations[location.position] = location
 
@@ -130,15 +130,9 @@ func has_collision(pos : Vector2) -> bool:
 	var collision = _collision_layer.get_cell_atlas_coords(grid_pos)
 	return collision != Vector2i(-1,-1)
 
-# get interactable
-# returns the interactable at a location, and an empty interactable if there is none
-func get_interactable(pos : Vector2) -> Interactable:
-	var grid_pos = _location_layer.local_to_map(pos)
-	
-	if grid_pos in _locations:
-		return _locations[grid_pos]
-	else:
-		return Interactable.new()
+# search tile
+# returns the result gained from searching the tile at a location
+
 
 # get encounter chance
 # returns the chance for combat on a target location as a percentage
@@ -157,11 +151,9 @@ func get_battle_data(pos : Vector2) -> Dictionary:
 	var ground = get_ground(pos)
 	var terrain = get_terrain(pos)
 	var collision = has_collision(pos)
-	var interactable = get_interactable(pos) # WIP
 	
 	return {
 		"ground" : ground,
 		"terrain" : terrain,
-		"collision" : collision,
-		"interactable" : interactable
+		"collision" : collision
 	}

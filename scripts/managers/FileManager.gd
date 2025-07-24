@@ -1,10 +1,10 @@
 # Emerald March
-# 06-30-2025
+# 07-22-2025
 # Brian Morris
 
 extends Node
 
 # File Manager
-# from the main scene, can load and save data, as well as manage stored data
+# handles retrieving and parsing JSON data
 
 class_name FileManager

@@ -44,12 +44,14 @@ func _process(delta : float):
 	# check for select key press
 	if Input.is_action_just_pressed("select"):
 		_show_next_line()
+		return
 	
 	if _choice_menu.active and Input.is_action_just_pressed("cancel"):
 		_choice_menu.active = false
 		_choice_menu.visible = false
-		_choice_menu.toggle_selector()
 		_choice_menu.unset_choices(true)
+		GameManager.pause()
+		return
 	
 	# check for rapid key press
 	_rapid = Input.is_action_pressed("cancel")
@@ -92,17 +94,18 @@ func _show_next_line():
 		_finish_line()
 		return
 	
+	# if we've got the choice menu active
+	if _choice_menu.active:
+		_choice_menu.on_select()
+		_choice_menu.active = false
+		_choice_menu.visible = false
+		_choice_menu.unset_choices(true)
+	
 	# end of all lines
 	if _dialogue_queue.is_empty():
 		end_dialogue()
+		GameManager.pause()
 		return
-	
-	# if we've got the choice menu active
-	if _choice_menu.active:
-		_choice_menu.active = false
-		_choice_menu.visible = false
-		_choice_menu.toggle_selector()
-		_choice_menu.unset_choices(true)
 	
 	_current_line = _dialogue_queue.pop_front()
 	_title_box.text = _current_line.actor_name
@@ -128,26 +131,23 @@ func _generate_choices():
 		for label in labels:
 			_create_option(label, _current_line.choices[label])
 		_choice_menu.lock_movement(false, true)
-		_choice_menu.active = true
 		_choice_menu.visible = true
-		_choice_menu.toggle_selector()
 		_choice_menu.move_selector_to(0)
+		_choice_menu.row_size = 1
+		await get_tree().create_timer(0.1).timeout
+		_choice_menu.active = true
 
 # create option
 # generates a new option and adds it to the menu
 func _create_option(_text : String, _function : Callable):
-	var label = Label.new()
+	var option = Option.new(_text, _function, true)
 	
-	var label_settings = load("res://assets/fonts/label_font.tres")
-	label.set("label_settings", label_settings)
-	label.set("size_flags_horizontal", 2)
-	label.set("custom_minimum_size", Vector2(100, 0))
-	label.set("vertical_alignment", 1)
-	label.set("horizontal_alignment", 1)
+	option.label_settings = load("res://assets/fonts/label_font.tres")
+	option.set("size_flags_horizontal", 4)
+	option.set("size_flags_vertical", 2)
+	option.set("vertical_alignment", 1)
+	option.set("horizontal_alignment", 1)
 	
-	label.text = _text
-	
-	var option = Option.new(label, _function, true)
 	_choice_menu.add_option(option)
 
 # end dialogue
@@ -156,9 +156,7 @@ func end_dialogue():
 	_is_animating = false
 	_buffer_string = ""
 	_timer = 0.0
-	if _choice_menu.active:
+	if _choice_menu.visible:
 		_choice_menu.active = false
 		_choice_menu.visible = false
-		_choice_menu.toggle_selector()
 		_choice_menu.unset_choices()
-	GameManager.pause()

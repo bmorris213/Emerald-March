@@ -9,32 +9,38 @@ extends Node
 
 class_name SceneManager
 
-# control variable
+# scene references
+enum SceneID {
+	MainMenu,
+	Overworld,
+	Battle,
+	Location,
+	Dungeon
+}
+const _SCENES := {
+	SceneID.MainMenu: "res://scenes/menus/MainMenu.tscn",
+	SceneID.Overworld: "res://scenes/overworld/Overworld.tscn",
+	SceneID.Battle: "res://scenes/battle/Battle.tscn",
+	SceneID.Location: "res://scenes/location/Location.tscn",
+	SceneID.Dungeon: "res://scenes/dungeon/Dungeon.tscn",
+}
+const INITIAL_SCENE := SceneID.MainMenu
 
 # node references
 var current_scene : Node
-var _scene_container : Node
-
-# set container
-# establishes a place to initialize scenes
-func set_container(target_node : Node):
-	_scene_container = target_node
 
 # change scene
-# main scene changing function
-# instantiates a scene onto self
-func set_scene(path : String = Constants.INITIAL_SCENE, scene_data : Dictionary = {}):
-	if not _scene_container:
-		return
-	
+# instantiates a scene onto self and hands it data to build itself
+func set_scene(scene_id : SceneID = INITIAL_SCENE, data_id : String = ""):
 	# free up current scene resources
 	if current_scene:
 		current_scene.queue_free()
 	
 	# instantiate new scene
-	var new_scene = load(path).instantiate()
-	_scene_container.add_child(new_scene)
+	var path : String = _SCENES[scene_id]
+	var new_scene : Node = load(path).instantiate()
+	add_child(new_scene)
 	current_scene = new_scene
 	
-	current_scene.set_up(scene_data)
-	current_scene.active = true
+	# build new scene
+	current_scene.set_up(data_id)

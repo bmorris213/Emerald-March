@@ -24,25 +24,23 @@ var _menu_stack : Array[Node] = []
 # process
 # runs once per frame
 func _process(_delta):
-	if _current_menu:
-		_current_menu.active = active
-	
 	if not active:
 		return
 	
+	# handle action calls
+	if Input.is_action_just_pressed("select"):
+		if _current_menu:
+			_current_menu.on_select()
 	if Input.is_action_just_pressed("cancel"):
 		back()
 
 # open
 # starts new menu navigation, beginning at the root menu if none is given
 func open(new_menu : NodePath = root_menu):
-	if _current_menu:
-		_current_menu.active = false
 	var menu = get_node(new_menu)
 	if menu:
 		_menu_stack.push_back(menu)
 		_current_menu = menu
-		menu.active = true
 		if not menu.visible:
 			_hide_current = true
 			menu.visible = true
@@ -67,7 +65,6 @@ func back():
 		return
 	
 	# close current menu
-	_current_menu.active = false
 	if _hide_current_selector:
 		_current_menu.toggle_selector()
 	if _hide_current:
@@ -76,7 +73,6 @@ func back():
 	
 	# open previous menu
 	_current_menu = _menu_stack[-1]
-	_current_menu.active = true
 	if not _current_menu.visible:
 		_hide_current = true
 		_current_menu.visible = true
@@ -87,7 +83,6 @@ func back():
 # close
 # exits menu navigation
 func close():
-	_current_menu.active = false
 	if _hide_current_selector:
 		_current_menu.toggle_selector()
 	if _hide_current:
@@ -98,3 +93,14 @@ func close():
 		_menu_stack = []
 	else:
 		open() # return to root
+
+# set active
+func set_active(activated : bool = true):
+	active = activated
+	if _current_menu:
+		_current_menu.active = activated
+
+# set up
+# initializes as a scene
+func set_up(_data_id):
+	open()

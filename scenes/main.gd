@@ -1,5 +1,5 @@
 # Emerald March
-# 07-03-2025
+# 07-22-2025
 # Brian Morris
 
 extends Node2D
@@ -11,4 +11,4 @@ extends Node2D
 # ready
 # called once start startup
 func _ready():
-	GameManager.setup_global_scene(self)
+	GameManager.setup_manager_references(self)

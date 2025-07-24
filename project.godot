@@ -21,7 +21,10 @@ GameManager="*res://globals/GameManager.gd"
 
 [display]
 
-window/stretch/scale=1.69
+window/size/viewport_width=800
+window/size/viewport_height=600
+window/size/borderless=true
+window/stretch/mode="viewport"
 
 [input]
 
