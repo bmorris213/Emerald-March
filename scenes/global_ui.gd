@@ -1,5 +1,5 @@
 # Emerald March
-# 07-22-2025
+# 07-25-2025
 # Brian Morris
 
 extends CanvasLayer
@@ -17,6 +17,7 @@ extends CanvasLayer
 @onready var _dialogue_box := $Viewport/DialogueBox
 @onready var _idle_popup := $Header/IdlePopup
 @onready var _party_display := $Footer/PartyDisplay
+@onready var _battle_screen := $Viewport/BattleScreen
 
 # control variables
 const _MIN_QUIT_OPACITY := 0.4 # the starting opacity for fade ins
@@ -146,3 +147,27 @@ func disable_tooltips():
 	_tool_tip.get_child(0).text = ""
 	_tool_tip.visible = false
 	_disable_overlay()
+
+# open battle
+# give battle manager appropriate data to build itself, disabling any pause otherwise
+func open_battle(battle_data : Dictionary):
+	_enable_overlay()
+	_battle_screen.visible = true
+	_battle_screen.set_up(battle_data)
+
+# end battle
+# hide battle screen
+func end_battle():
+	_battle_screen.erase()
+	_battle_screen.visible = false
+	_disable_overlay()
+
+# set battle active
+# toggles battle mode controls
+func set_battle_active(to_active : bool = true):
+	_battle_screen.set_active(to_active)
+
+# toggle auto battle
+# menu button use for battle scene
+func toggle_auto_battle():
+	_battle_screen.toggle_auto_battle()

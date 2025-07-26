@@ -1,0 +1,118 @@
+[gd_scene load_steps=9 format=3 uid="uid://ba3k3ui5kkqe"]
+
+[ext_resource type="Texture2D" uid="uid://dbx5rw2iicsi3" path="res://assets/images/test.png" id="1_kbtf5"]
+[ext_resource type="Script" path="res://scenes/menus/battle.gd" id="2_borlh"]
+[ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="3_sqj5u"]
+[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="4_cunc1"]
+[ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="4_uv0bm"]
+[ext_resource type="Script" path="res://scenes/menus/menu_tree.gd" id="6_jffuj"]
+[ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="7_eyc6b"]
+[ext_resource type="Script" path="res://scenes/menus/option.gd" id="8_0kqot"]
+
+[node name="BattleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_borlh")
+
+[node name="BattleMenu" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_kbtf5")
+expand_mode = 1
+script = ExtResource("6_jffuj")
+root_menu = NodePath("PrimaryMenu")
+
+[node name="PrimaryMenu" type="TextureRect" parent="BattleMenu"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.6
+anchor_right = 0.35
+anchor_bottom = 1.0
+texture = ExtResource("3_sqj5u")
+expand_mode = 1
+script = ExtResource("4_cunc1")
+
+[node name="Selector" type="TextureRect" parent="BattleMenu/PrimaryMenu"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_uv0bm")
+expand_mode = 1
+
+[node name="Options" type="VBoxContainer" parent="BattleMenu/PrimaryMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="BattleMenu/PrimaryMenu/Options"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+text = "Exit Battle"
+label_settings = ExtResource("7_eyc6b")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("8_0kqot")
+method_name = "end_battle"
+
+[node name="SecondaryMenu" type="TextureRect" parent="BattleMenu"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.35
+anchor_top = 0.6
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+texture = ExtResource("3_sqj5u")
+expand_mode = 1
+script = ExtResource("4_cunc1")
+
+[node name="Selector" type="TextureRect" parent="BattleMenu/SecondaryMenu"]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_uv0bm")
+expand_mode = 1
+
+[node name="Options" type="VBoxContainer" parent="BattleMenu/SecondaryMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Monster Screen" type="Control" parent="BattleMenu"]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 0.6
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_cunc1")
+
+[node name="Selector" type="TextureRect" parent="BattleMenu/Monster Screen"]
+visible = false
+layout_mode = 2
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_uv0bm")
+expand_mode = 1
+
+[node name="Options" type="VBoxContainer" parent="BattleMenu/Monster Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

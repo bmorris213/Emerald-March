@@ -1,6 +1,61 @@
-[gd_scene load_steps=2 format=3 uid="uid://8kcuvn5ou6hs"]
+[gd_scene load_steps=9 format=3 uid="uid://8kcuvn5ou6hs"]
 
 [ext_resource type="Script" path="res://scenes/location/location.gd" id="1_ymxc4"]
+[ext_resource type="Texture2D" uid="uid://bomca7urm6e5p" path="res://assets/images/test_area.png" id="2_pl0uc"]
+[ext_resource type="Script" path="res://scenes/menus/menu_tree.gd" id="3_grbqy"]
+[ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="4_bavbl"]
+[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="5_3gxga"]
+[ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="6_wda30"]
+[ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="7_2l6rb"]
+[ext_resource type="Script" path="res://scenes/menus/option.gd" id="8_mtyq6"]
 
 [node name="Location" type="Node2D"]
 script = ExtResource("1_ymxc4")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1018.0
+offset_bottom = 541.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_pl0uc")
+expand_mode = 1
+script = ExtResource("3_grbqy")
+root_menu = NodePath("TextureRect")
+
+[node name="TextureRect" type="TextureRect" parent="TextureRect"]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 447.0
+offset_right = 500.0
+offset_bottom = 514.0
+texture = ExtResource("4_bavbl")
+expand_mode = 1
+script = ExtResource("5_3gxga")
+
+[node name="Selector" type="TextureRect" parent="TextureRect/TextureRect"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("6_wda30")
+
+[node name="Options" type="VBoxContainer" parent="TextureRect/TextureRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="TextureRect/TextureRect/Options"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 80
+text = "Go Back"
+label_settings = ExtResource("7_2l6rb")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("8_mtyq6")
+method_name = "exit_location"

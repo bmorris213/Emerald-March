@@ -68,9 +68,6 @@ func _handle_input():
 		if Input.is_action_just_pressed("select"):
 			_action_buffered = true
 		
-		# test for the end of movement
-		if not _player.is_moving():
-			_finish_move()
 		return
 	
 	# check for a stored action buffer
@@ -131,7 +128,7 @@ func _update_player_facing(direction : Vector2i):
 
 # finish move
 # function called when movement reaches a new tile
-func _finish_move():
+func finish_move():
 	_is_walking = false
 	_steps += 1
 	
@@ -141,6 +138,11 @@ func _finish_move():
 	if r < encounter_chance:
 		_action_buffered = false
 		GameManager.start_battle(_current_region.get_battle_data(_player.get_location(false)))
+
+# pause camera
+# used to pause player camera recording
+func toggle_camera():
+	$Player/Camera2D.make_current(not $Player/Camera2D.is_current())
 
 # try select
 # attempt to interact with a location

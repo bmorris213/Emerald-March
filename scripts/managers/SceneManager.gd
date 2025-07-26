@@ -1,5 +1,5 @@
 # Emerald March
-# 07-22-2025
+# 07-25-2025
 # Brian Morris
 
 extends Node
@@ -31,7 +31,7 @@ var current_scene : Node
 
 # change scene
 # instantiates a scene onto self and hands it data to build itself
-func set_scene(scene_id : SceneID = INITIAL_SCENE, data_id : String = ""):
+func set_scene(scene_id : SceneID = INITIAL_SCENE, data : Dictionary = {}):
 	# free up current scene resources
 	if current_scene:
 		current_scene.queue_free()
@@ -43,4 +43,4 @@ func set_scene(scene_id : SceneID = INITIAL_SCENE, data_id : String = ""):
 	current_scene = new_scene
 	
 	# build new scene
-	current_scene.set_up(data_id)
+	current_scene.set_up(data)

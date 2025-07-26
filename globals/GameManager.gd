@@ -1,5 +1,5 @@
 # Emerald March
-# 07-22-2025
+# 07-25-2025
 # Brian Morris
 
 extends Node
@@ -62,7 +62,7 @@ func setup_manager_references(root : Node):
 	# grab canvas references
 	_global_ui = root.get_node("GlobalUI")
 	
-	# set up first scene
+	# set up the main menu
 	_scene_manager.set_scene()
 	_switch_state(_GameState.main_menu)
 
@@ -139,6 +139,8 @@ func _switch_state(new_state : _GameState):
 			_global_ui.set_pause_active(false)
 		_GameState.dialogue:
 			_global_ui.set_dialogue_active(false)
+		_GameState.battle:
+			_global_ui.set_battle_active(false)
 		_:
 			_scene_manager.current_scene.active = false
 	
@@ -152,8 +154,9 @@ func _switch_state(new_state : _GameState):
 	var scene_states := scene_state_map.keys()
 	if _game_state in scene_states and\
 	new_state in scene_states:
-		_scene_manager.set_scene(scene_state_map[new_state])
-		_previous_states = [new_state]
+		var data := {}
+		_scene_manager.set_scene(scene_state_map[new_state], data)
+		_previous_states.push_back(new_state)
 	
 	# disable controls for a brief pause
 	_game_state = _GameState.inactive
@@ -169,6 +172,8 @@ func _switch_state(new_state : _GameState):
 			_global_ui.set_pause_active()
 		_GameState.dialogue:
 			_global_ui.set_dialogue_active()
+		_GameState.battle:
+			_global_ui.set_battle_active()
 		_:
 			_scene_manager.current_scene.active = true
 	_game_state = new_state
@@ -187,17 +192,13 @@ func pause():
 		_GameState.main_menu:
 			_scene_manager.current_scene.close() # returns to root in menu tree
 		_GameState.battle:
-			_scene_manager.current_scene.toggle_auto_battle()
+			_global_ui.toggle_auto_battle()
 		_GameState.paused:
 			_global_ui.close_pause_menu()
-			var next_state = _previous_states.pop_back()
-			print(next_state)
-			_switch_state(next_state)
+			_switch_state(_previous_states.pop_back())
 		_GameState.dialogue:
 			_global_ui.end_dialogue()
-			var next_state = _previous_states.pop_back()
-			print(next_state)
-			_switch_state(next_state)
+			_switch_state(_previous_states.pop_back())
 		_: # any active scenes
 			_global_ui.open_pause_menu()
 			_previous_states.push_back(_game_state)
@@ -205,16 +206,29 @@ func pause():
 
 # start dialogue
 # begins a dialogue interaction
-func start_dialogue(lines : Array[Dialogue]): # WIP replace lines with actor id
+func start_dialogue(lines : Array[Dialogue]):
 	_global_ui.start_dialogue(lines)
 	_previous_states.push_back(_game_state)
 	_switch_state(_GameState.dialogue)
 
 # start battle
 # switches to the battle scene for combat
-func start_battle(battle_data : Dictionary): # WIP
-	print("COMBAT START")
-	print(battle_data)
+func start_battle(battle_data : Dictionary):
+	if _game_state == _GameState.paused:
+		_global_ui.close_pause_menu()
+		await _switch_state(_previous_states.pop_back())
+	elif _game_state == _GameState.dialogue:
+		_global_ui.end_dialogue()
+		await _switch_state(_previous_states.pop_back())
+	_previous_states.push_back(_game_state)
+	_global_ui.open_battle(battle_data)
+	_switch_state(_GameState.battle)
+
+# end battle
+# switches back to the active scene after combat
+func end_battle():
+	_global_ui.end_battle()
+	_switch_state(_previous_states.pop_back())
 
 # main menu
 # asks the user for confirmation before returning to main menu
@@ -259,3 +273,13 @@ func quit_game():
 		}
 	)
 	start_dialogue([line])
+
+# exit location
+# return to the overworld scene
+func exit_location():
+	_switch_state(_previous_states.pop_back())
+
+# end of tile
+# finish player movement
+func end_of_tile():
+	_scene_manager.current_scene.finish_move()

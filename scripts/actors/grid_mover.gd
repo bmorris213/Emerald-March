@@ -31,6 +31,7 @@ func _physics_process(delta):
 	# check if movement would finish progress
 	if distance_to_move >= remaining_distance:
 		_current_position = _target_position
+		GameManager.end_of_tile()
 		return
 	
 	# move

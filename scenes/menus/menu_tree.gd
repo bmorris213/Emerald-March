@@ -1,5 +1,5 @@
 # Emerald March
-# 07-22-2025
+# 07-25-2025
 # Brian Morris
 
 extends Node
@@ -37,22 +37,31 @@ func _process(_delta):
 # open
 # starts new menu navigation, beginning at the root menu if none is given
 func open(new_menu : NodePath = root_menu):
+	if _current_menu:
+		_current_menu.active = false
+	
 	var menu = get_node(new_menu)
-	if menu:
-		_menu_stack.push_back(menu)
-		_current_menu = menu
-		if not menu.visible:
-			_hide_current = true
-			menu.visible = true
-		if not menu.selector_is_on():
-			_hide_current_selector = true
-			menu.toggle_selector()
-		menu.toggle_selector()
-		await get_tree().process_frame
-		menu.move_selector_to(0)
-		menu.toggle_selector()
-	else:
+	
+	if not menu:
 		push_error("MenuTree: error menu node path in open")
+		return
+	
+	_menu_stack.push_back(menu)
+	_current_menu = menu
+	
+	if not menu.visible:
+		_hide_current = true
+		menu.visible = true
+	if not menu.selector_is_on():
+		_hide_current_selector = true
+		menu.toggle_selector()
+	
+	menu.toggle_selector()
+	menu.active = true
+	await get_tree().process_frame
+	
+	menu.move_selector_to(0)
+	menu.toggle_selector()
 
 # back
 # navigates backward in the tree, potentially closing the menu
@@ -69,6 +78,7 @@ func back():
 		_current_menu.toggle_selector()
 	if _hide_current:
 		_current_menu.visible = false
+	_current_menu.active = false
 	_menu_stack.pop_back()
 	
 	# open previous menu
@@ -79,6 +89,7 @@ func back():
 	if not _current_menu.selector_is_on():
 		_hide_current_selector = true
 		_current_menu.toggle_selector()
+	_current_menu.active = true
 
 # close
 # exits menu navigation
@@ -95,12 +106,13 @@ func close():
 		open() # return to root
 
 # set active
+# toggles current menu and self active state
 func set_active(activated : bool = true):
 	active = activated
 	if _current_menu:
 		_current_menu.active = activated
 
 # set up
-# initializes as a scene
-func set_up(_data_id):
+# opens root
+func set_up(_data):
 	open()
