@@ -57,6 +57,11 @@ func move_player(target : Vector2):
 	_is_walking = true
 	_state_machine.travel("Walking")
 
+# teleport to
+# instantly move a player to a target location
+func teleport_to(target : Vector2):
+	_mover.teleport(target)
+
 # update player facing
 # changes the animation direction for the player
 func update_player_facing(direction : Vector2i):

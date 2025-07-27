@@ -9,11 +9,34 @@ extends Resource
 
 class_name Region
 
+# every region in the game based on ID
+enum RegionID {
+	Cel,
+	Höf,
+	Caelor,
+	Eldefer,
+	Thorazar,
+	Moor,
+	Missora,
+	Indras,
+	Alazar,
+	Tarak,
+	Dagohmor,
+	Silvora,
+	Telrasi,
+	Mokhora,
+	Poemas,
+	Kililao
+}
+const DEFAULT_REGION := RegionID.Cel
+
 # maps of the region
 var _ground_layer : Dictionary
 var _terrain_layer : Dictionary
 var _collision_layer : Dictionary
 var _locations : Dictionary
+var _map_border := Vector2i(12, 9)
+var _map_size : Vector2i
 
 # Ground Data
 enum GroundType {
@@ -67,19 +90,119 @@ const _TERRAIN_ENCOUNTER_RATES := {
 	TerrainType.mountains : 0.12
 }
 const _TERRAIN_ATLAS_COORDS := {
+	TerrainType.plains: _EMPTY_ATLAS_COORDS,
 	TerrainType.wilds: Vector2i(1,1),
 	TerrainType.hills: Vector2i(1,2),
 	TerrainType.woods: Vector2i(1,3),
 	TerrainType.mountains: Vector2i(1,4)
 }
+const _EMPTY_ATLAS_COORDS := Vector2i(5, 1)
+
+# collision data
+const _COLLISION_ATLAS_COORDS := {
+	true: Vector2i(0,0),
+	false: _EMPTY_ATLAS_COORDS
+}
 
 # constructor
-func _init(ground_map : Dictionary, terrain_map : Dictionary\
-, collision_map : Dictionary, location_map : Dictionary):
-	self._ground_layer = ground_map.duplicate()
-	self._terrain_layer = terrain_map.duplicate()
-	self._collision_layer = collision_map.duplicate()
-	self._locations = location_map.duplicate()
+func _init(ground_map : Array, terrain_map : Array\
+, collision_map : Array, locations : Array):
+	var map_y_size : int = max(
+		max(
+			ground_map.size(), terrain_map.size()
+		), collision_map.size()
+	)
+	var map_x_size : int = max(
+		max(
+			ground_map[0].length(), terrain_map[0].length()
+		), collision_map[0].length()
+	)
+	_map_size = Vector2i(map_x_size, map_y_size)
+	
+	self._ground_layer = _get_layer(ground_map, func(arg):
+		var int_arg : int = arg.to_int()
+		return int_arg as GroundType
+		)
+	self._terrain_layer = _get_layer(terrain_map, func(arg):
+		var int_arg : int = arg.to_int()
+		return int_arg as TerrainType
+		)
+	self._collision_layer = _get_layer(collision_map, func(arg):
+		return arg == "1"
+		)
+	for location in locations:
+		self._locations[location.position + _map_border] = location
+
+# get layer
+# returns the layer of cells as a dictionary of vector2i -> data
+func _get_layer(layer_map : Array, conversion_function : Callable) -> Dictionary:
+	var layer := {}
+	for i in layer_map.size():
+		for j in layer_map[i].length():
+			var cell = conversion_function.call(layer_map[i][j])
+			layer[Vector2i(j + _map_border.x, i + _map_border.y)] = cell
+	return layer
+
+# get cell
+# returns atlas coords for a single cell of the map
+func _get_cell(map_layer : String, grid_pos : Vector2i):
+	# duplicate cells for border
+	if not is_within_border(grid_pos):
+		return _get_cell(map_layer, _get_within_border(grid_pos))
+	
+	# for each layer, retrieve appropriate atlas coords
+	match map_layer:
+		"ground":
+			if grid_pos in _ground_layer:
+				var cell = _ground_layer[grid_pos] as GroundType
+				return _GROUND_ATLAS_COORDS[cell]
+			else:
+				return _EMPTY_ATLAS_COORDS
+		"terrain":
+			if grid_pos in _terrain_layer:
+				var cell = _terrain_layer[grid_pos] as TerrainType
+				return _TERRAIN_ATLAS_COORDS[cell]
+			else:
+				return _EMPTY_ATLAS_COORDS
+		"collision":
+			if grid_pos in _collision_layer:
+				var cell = _collision_layer[grid_pos] as bool
+				return _COLLISION_ATLAS_COORDS[cell]
+			else:
+				return _EMPTY_ATLAS_COORDS
+		"location":
+			if grid_pos in _locations:
+				return _locations[grid_pos].atlas_coords
+			else:
+				return _EMPTY_ATLAS_COORDS
+
+# get within border
+# retrieve the nearest coords that are within the border from coords that aren't 
+func _get_within_border(init_pos : Vector2i) -> Vector2i:
+	var left_side : int = _map_border.x
+	var right_side : int = _map_size.x + (_map_border.x * 2)
+	var top_side : int = _map_border.y
+	var bottom_side : int = _map_size.y + (_map_border.y * 2)
+	
+	if init_pos.x < left_side:
+		# check corners first
+		if init_pos.y < bottom_side:
+			return Vector2i(left_side + 1, bottom_side - 1)
+		elif init_pos.y > top_side:
+			return Vector2i(left_side + 1, top_side + 1)
+		return Vector2i(left_side + 1, init_pos.y)
+	elif init_pos.x > right_side:
+		# check corners first
+		if init_pos.y < bottom_side:
+			return Vector2i(right_side - 1, bottom_side - 1)
+		elif init_pos.y > top_side:
+			return Vector2i(right_side - 1, top_side + 1)
+		return Vector2i(right_side - 1, init_pos.y)
+	elif init_pos.y < bottom_side:
+		return Vector2i(init_pos.x, bottom_side - 1)
+	elif init_pos.y > top_side:
+		return Vector2i(init_pos.x, top_side + 1)
+	return init_pos
 
 # get speed
 # retrieves the tile movement speed from location details in terms of tiles per second
@@ -158,10 +281,20 @@ func get_data(grid_pos : Vector2i) -> Dictionary:
 # is within borders
 # returns true if the position is within the outer limits of the map
 func is_within_border(grid_pos : Vector2i) -> bool:
-	return false
+	return grid_pos.x >= _map_border.x and\
+	grid_pos.y >= _map_border.y and\
+	grid_pos.x <= (_map_border.x * 2) + _map_size.x and\
+	grid_pos.y <= (_map_border.y * 2) + _map_size.y
 
 # get atlas_map
 # returns a map of atlas coordinates per tile for each layer
-func get_atlas_map() -> Dictionary:
-	# WIP
-	return {}
+func get_atlas_map(map_layer : String) -> Array:
+	var map := []
+	
+	for i in _map_size.y + (_map_border.y * 2):
+		map.append([])
+		for j in _map_size.x + (_map_border.x * 2):
+			var grid_pos := Vector2i(j, i)
+			map[i].append(_get_cell(map_layer, grid_pos))
+	
+	return map

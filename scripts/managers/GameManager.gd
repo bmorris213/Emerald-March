@@ -124,7 +124,7 @@ func _process(delta : float):
 
 # switch state
 # changing from gameplay context to another, pausing input listeners
-func _switch_state(new_state : _GameState):
+func _switch_state(new_state : _GameState, data : Dictionary = {}):
 	# escape redundant calls
 	if _game_state == new_state:
 		return
@@ -154,7 +154,6 @@ func _switch_state(new_state : _GameState):
 	var scene_states := scene_state_map.keys()
 	if _game_state in scene_states and\
 	new_state in scene_states:
-		var data := {}
 		_scene_manager.set_scene(scene_state_map[new_state], data)
 		_previous_states.push_back(new_state)
 	
@@ -181,7 +180,7 @@ func _switch_state(new_state : _GameState):
 # new game
 # move to the first location in the game
 func new_game():
-	_switch_state(_GameState.overworld)
+	_switch_state(_GameState.overworld, FileManager.get_region())
 
 # pause
 # opens or closes the pause menu, or closes dialogue

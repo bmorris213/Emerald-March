@@ -102,10 +102,13 @@ func _handle_input(delta : float):
 # can move
 # returns true if tile could be traversed by the player
 func _can_move(target : Vector2) -> bool:
-	if _is_scoping:
-		return _current_region.is_within_borders(target)
-	
 	var grid_pos = _ground_layer.local_to_map(target)
+	if not _current_region.is_within_border(grid_pos + _current_region._map_size):
+		return false
+	
+	if _is_scoping:
+		return true
+	
 	var terrain = _current_region.get_terrain(grid_pos)
 	var ground = _current_region.get_ground(grid_pos)
 	var collision = _current_region.has_collision(grid_pos)
@@ -136,12 +139,33 @@ func _snap_scope():
 func _try_select():
 	pass
 
+# build tilemap
+# constructs a tilemap from map data retrieved from file
+func _build_tilemap(layer : TileMapLayer, data_map : Array):
+	for i in data_map.size():
+		for j in data_map[i].size():
+			var tile_id = data_map[i][j]
+			layer.set_cell(Vector2i(j, i), 0, tile_id)
+
 # set up
 # fills in the world using retrieved data from the files
 func set_up(scene_data : Dictionary):
-	print(scene_data)
-	# Region.new(ground_map, terrain_map, collision_map, location_map)
-	# _layer = _current_region 
+	var _ground = scene_data["ground_map"]
+	var _terrain = scene_data["terrain_map"]
+	var _collisions = scene_data["collision_map"]
+	var _locations = scene_data["locations"]
+	_current_region = Region.new(_ground, _terrain, _collisions, _locations)
+	
+	var _map = _current_region.get_atlas_map("ground")
+	_build_tilemap(_ground_layer, _map)
+	_map = _current_region.get_atlas_map("terrain")
+	_build_tilemap(_terrain_layer, _map)
+	_map = _current_region.get_atlas_map("collision")
+	_build_tilemap(_collision_layer, _map)
+	_map = _current_region.get_atlas_map("location")
+	_build_tilemap(_location_layer, _map)
+	
+	_player.teleport_to(_ground_layer.map_to_local(Vector2i(14,14)))
 
 # set active
 # activates self and the player object
