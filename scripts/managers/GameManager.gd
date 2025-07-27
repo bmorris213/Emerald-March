@@ -1,5 +1,5 @@
 # Emerald March
-# 07-25-2025
+# 07-29-2025
 # Brian Morris
 
 extends Node
@@ -51,9 +51,9 @@ func _ready():
 	random_generator.randomize()
 	random_generator.seed = hash("Alpha State") # TESTING PURPOSES WIP
 
-# setup manager references
+# initialize
 # gives access to the other managers in the main scene
-func setup_manager_references(root : Node):
+func initialize(root : Node):
 	# initialize managers
 	_scene_manager = root.get_node("ActiveScene")
 	_audio_manager = root.get_node("GlobalAudio")
@@ -142,7 +142,7 @@ func _switch_state(new_state : _GameState):
 		_GameState.battle:
 			_global_ui.set_battle_active(false)
 		_:
-			_scene_manager.current_scene.active = false
+			_scene_manager.current_scene.set_active(false)
 	
 	# potentially switch scenes
 	var scene_state_map := {
@@ -175,7 +175,7 @@ func _switch_state(new_state : _GameState):
 		_GameState.battle:
 			_global_ui.set_battle_active()
 		_:
-			_scene_manager.current_scene.active = true
+			_scene_manager.current_scene.set_active()
 	_game_state = new_state
 
 # new game
@@ -214,12 +214,32 @@ func start_dialogue(lines : Array[Dialogue]):
 # start battle
 # switches to the battle scene for combat
 func start_battle(battle_data : Dictionary):
+	# close any paused menu or dialogue
 	if _game_state == _GameState.paused:
 		_global_ui.close_pause_menu()
 		await _switch_state(_previous_states.pop_back())
 	elif _game_state == _GameState.dialogue:
 		_global_ui.end_dialogue()
 		await _switch_state(_previous_states.pop_back())
+	
+	# get enemies
+	
+	# send a battle warning message
+	var message_title := "Warning"
+	var message := "Enemies approach!"
+	if battle_data["is_surprise"]:
+		message_title = "Surprise"
+		message = "You come across unaware enemies!"
+	elif battle_data["is_ambush"]:
+		message_title = "Ambush"
+		message = "You are ambushed by enemies!"
+	start_dialogue([Dialogue.new(message_title,message)])
+	
+	# await end of dialogue
+	while _game_state == _GameState.dialogue:
+		await get_tree().process_frame
+	
+	# start battle
 	_previous_states.push_back(_game_state)
 	_global_ui.open_battle(battle_data)
 	_switch_state(_GameState.battle)

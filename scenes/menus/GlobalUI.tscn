@@ -1,11 +1,11 @@
 [gd_scene load_steps=9 format=3 uid="uid://di2qs3ysudlpb"]
 
-[ext_resource type="Script" path="res://scenes/global_ui.gd" id="1_5che5"]
+[ext_resource type="Script" path="res://scenes/menus/global_ui.gd" id="1_5che5"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="2_c4hxk"]
 [ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="3_dxyhm"]
 [ext_resource type="PackedScene" uid="uid://bpakvvgy2nq1q" path="res://scenes/menus/PauseMenu.tscn" id="4_ue7h3"]
 [ext_resource type="PackedScene" uid="uid://covilc32xt84c" path="res://scenes/menus/DialogueBox.tscn" id="5_5640a"]
-[ext_resource type="PackedScene" uid="uid://ba3k3ui5kkqe" path="res://scenes/menus/battle_screen.tscn" id="6_3wirq"]
+[ext_resource type="PackedScene" uid="uid://ba3k3ui5kkqe" path="res://scenes/menus/BattleScreen.tscn" id="6_3wirq"]
 [ext_resource type="FontFile" uid="uid://nln3rhxol8vf" path="res://assets/fonts/Orange Kid.otf" id="6_afr03"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_s4uyr"]

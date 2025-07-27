@@ -1,5 +1,5 @@
 ## Chronicles of Verumn: Emerald March
-An old school rpg blending FF1, Warriors of the Eternal Sun, Etrian Odyssey, and Shining Force set in the fantasy world of Verumn
+An old school fantasy RPG set in the fantasy world of Verumn
 Game 1 of the Chronicles of Verumn saga:
 Liberate the world of Verumn from the tyranical rule of the invincible Dragons!
 

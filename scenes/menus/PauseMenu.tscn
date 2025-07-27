@@ -1,11 +1,11 @@
 [gd_scene load_steps=10 format=3 uid="uid://bpakvvgy2nq1q"]
 
-[ext_resource type="Script" path="res://scenes/menus/menu_tree.gd" id="1_43fmb"]
+[ext_resource type="Script" path="res://scripts/menus/menu_tree.gd" id="1_43fmb"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="2_w288l"]
-[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="3_87es6"]
+[ext_resource type="Script" path="res://scripts/menus/menu.gd" id="3_87es6"]
 [ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="3_vkm4v"]
 [ext_resource type="FontFile" uid="uid://nln3rhxol8vf" path="res://assets/fonts/Orange Kid.otf" id="4_m88sl"]
-[ext_resource type="Script" path="res://scenes/menus/option.gd" id="5_yl6d1"]
+[ext_resource type="Script" path="res://scripts/menus/option.gd" id="5_yl6d1"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_bxmwv"]
 font = ExtResource("4_m88sl")

@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://cc1y3glapql5e"]
 
-[ext_resource type="Script" path="res://scenes/main.gd" id="1_xiocn"]
+[ext_resource type="Script" path="res://scenes/main/main.gd" id="1_xiocn"]
 [ext_resource type="Script" path="res://scripts/managers/SceneManager.gd" id="2_uvf80"]
-[ext_resource type="PackedScene" uid="uid://di2qs3ysudlpb" path="res://scenes/GlobalUI.tscn" id="3_7mfao"]
+[ext_resource type="PackedScene" uid="uid://di2qs3ysudlpb" path="res://scenes/menus/GlobalUI.tscn" id="3_7mfao"]
 [ext_resource type="Script" path="res://scripts/managers/AudioManager.gd" id="4_6y31i"]
 
 [node name="Main" type="Node2D"]

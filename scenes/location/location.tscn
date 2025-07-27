@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" path="res://scenes/location/location.gd" id="1_ymxc4"]
 [ext_resource type="Texture2D" uid="uid://bomca7urm6e5p" path="res://assets/images/test_area.png" id="2_pl0uc"]
-[ext_resource type="Script" path="res://scenes/menus/menu_tree.gd" id="3_grbqy"]
+[ext_resource type="Script" path="res://scripts/menus/menu_tree.gd" id="3_grbqy"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="4_bavbl"]
-[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="5_3gxga"]
+[ext_resource type="Script" path="res://scripts/menus/menu.gd" id="5_3gxga"]
 [ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="6_wda30"]
 [ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="7_2l6rb"]
-[ext_resource type="Script" path="res://scenes/menus/option.gd" id="8_mtyq6"]
+[ext_resource type="Script" path="res://scripts/menus/option.gd" id="8_mtyq6"]
 
 [node name="Location" type="Node2D"]
 script = ExtResource("1_ymxc4")

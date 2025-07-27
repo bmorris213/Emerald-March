@@ -3,11 +3,11 @@
 [ext_resource type="Texture2D" uid="uid://dbx5rw2iicsi3" path="res://assets/images/test.png" id="1_kbtf5"]
 [ext_resource type="Script" path="res://scenes/menus/battle.gd" id="2_borlh"]
 [ext_resource type="Texture2D" uid="uid://cvy08xdeth6al" path="res://assets/images/box.png" id="3_sqj5u"]
-[ext_resource type="Script" path="res://scenes/menus/menu.gd" id="4_cunc1"]
+[ext_resource type="Script" path="res://scripts/menus/menu.gd" id="4_cunc1"]
 [ext_resource type="Texture2D" uid="uid://bklfko8s1shh3" path="res://assets/images/selector.png" id="4_uv0bm"]
-[ext_resource type="Script" path="res://scenes/menus/menu_tree.gd" id="6_jffuj"]
+[ext_resource type="Script" path="res://scripts/menus/menu_tree.gd" id="6_jffuj"]
 [ext_resource type="LabelSettings" uid="uid://ds64xsaqw7u2f" path="res://assets/fonts/label_font.tres" id="7_eyc6b"]
-[ext_resource type="Script" path="res://scenes/menus/option.gd" id="8_0kqot"]
+[ext_resource type="Script" path="res://scripts/menus/option.gd" id="8_0kqot"]
 
 [node name="BattleScreen" type="Control"]
 layout_mode = 3
@@ -80,6 +80,7 @@ script = ExtResource("4_cunc1")
 
 [node name="Selector" type="TextureRect" parent="BattleMenu/SecondaryMenu"]
 visible = false
+layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 texture = ExtResource("4_uv0bm")
