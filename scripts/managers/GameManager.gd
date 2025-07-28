@@ -206,6 +206,13 @@ func pause():
 # start dialogue
 # begins a dialogue interaction
 func start_dialogue(lines : Array[Dialogue]):
+	if _game_state == _GameState.dialogue:
+		# await end of dialogue
+		while _game_state == _GameState.dialogue:
+			await get_tree().process_frame
+		
+		await get_tree().create_timer(_INTERRUPT_DURATION).timeout
+	
 	_global_ui.start_dialogue(lines)
 	_previous_states.push_back(_game_state)
 	_switch_state(_GameState.dialogue)

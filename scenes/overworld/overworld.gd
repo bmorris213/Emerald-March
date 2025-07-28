@@ -223,7 +223,7 @@ func _try_select():
 		line = Dialogue.new(
 			_current_region.get_title(grid_pos),
 			result)
-		print("GameManager.start_dialogue([line])")
+		GameManager.start_dialogue([line])
 		}
 	)
 	GameManager.start_dialogue([line])
