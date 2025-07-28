@@ -310,12 +310,27 @@ func quit_game():
 # exit location
 # return to the overworld scene
 func exit_location():
-	_switch_state(_previous_states.pop_back())
+	_switch_state(_GameState.overworld, FileManager.get_region())
 
 # enter location
 # uses location entrance to visit another region or free roam
 func enter_location(location : Dictionary):
-	print(location)
+	if location["key_string"] == "region":
+		var entrance_id = location["entrance_id"]
+		var entrance_location = _scene_manager.current_scene._current_region.entrances[entrance_id]
+		entrance_location = _scene_manager.current_scene._ground_layer.map_to_local(entrance_location)
+		_scene_manager.current_scene._player.teleport_to(entrance_location)
+	elif location["key_string"] == "town":
+		# close any paused menu or dialogue
+		if _game_state == _GameState.dialogue:
+			_global_ui.end_dialogue()
+			_game_state = _previous_states.pop_back()
+			_global_ui.set_dialogue_active(false)
+		if _game_state == _GameState.paused:
+			_global_ui.close_pause_menu()
+			_game_state = _previous_states.pop_back()
+			_global_ui.set_pause_active(false)
+		_switch_state(_GameState.free_roam)
 
 # end of tile
 # finish player movement

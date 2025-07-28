@@ -12,7 +12,6 @@ class_name FileManager
 # get region
 # returns data needed to build a region accessed from region ID
 static func get_region(region_id : Region.RegionID = Region.DEFAULT_REGION) -> Dictionary:
-	print(region_id)
 	var region_map := {}
 	region_map["ground_map"] = [
 		"0001112223335566",
@@ -63,7 +62,7 @@ static func get_region(region_id : Region.RegionID = Region.DEFAULT_REGION) -> D
 		}
 	]
 	region_map["entrances"] = {
-		0 : Vector2i(1,0),
-		1 : Vector2i(1,7)
+		0 : Vector2i(1,7),
+		1 : Vector2i(1,0)
 	}
 	return region_map

@@ -37,6 +37,7 @@ var _collision_layer : Dictionary
 var _locations : Dictionary
 var _explorations : Array
 var _map_size : Vector2i
+var entrances : Dictionary
 
 var player_location : Vector2i
 var _starting_location : Vector2i

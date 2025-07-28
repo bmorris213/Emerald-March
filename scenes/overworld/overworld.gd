@@ -167,11 +167,11 @@ func _try_select():
 			loc["key_string"],
 			"Enter the %s?" % [Region.LocationType.keys()[loc["type"]]],
 			{
-				"Don't" : func(): pass,
 				"Enter" : func():
 			if not _current_region.tile_is_explored(grid_pos):
 				_current_region.explore_location(loc)
-			GameManager.enter_location(loc)
+			GameManager.enter_location(loc),
+				"Don't" : func(): pass
 			}
 		)
 		GameManager.start_dialogue([line])
@@ -216,14 +216,14 @@ func _try_select():
 		"Explore",
 		detail,
 		{
-			"Don't" : func(): pass,
 			"Explore" : func():
 		_elapsed_time += 3.5 / (_current_region.get_speed(grid_pos) * 2)
 		var result = _current_region.search_tile(grid_pos)
 		line = Dialogue.new(
 			_current_region.get_title(grid_pos),
 			result)
-		GameManager.start_dialogue([line])
+		GameManager.start_dialogue([line]),
+			"Don't" : func(): pass
 		}
 	)
 	GameManager.start_dialogue([line])
@@ -244,6 +244,7 @@ func set_up(scene_data : Dictionary):
 	var _collisions = scene_data["collision_map"]
 	var _locations = scene_data["locations"]
 	_current_region = Region.new(_ground, _terrain, _collisions, _locations)
+	_current_region.entrances = scene_data["entrances"]
 	
 	var _map = _current_region.get_atlas_map("ground")
 	_build_tilemap(_ground_layer, _map)
