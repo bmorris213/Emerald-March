@@ -33,12 +33,14 @@ var _tile_size : int
 # called once at startup
 func _ready():
 	_tile_size = _ground_layer.tile_set.tile_size.x
-	_player.set_center(_tile_size)
 
 # process
 # called once per frame
 func _process(delta : float):
 	if not _current_region:
+		return
+	
+	if not active:
 		return
 	
 	# fix player location details
@@ -90,20 +92,24 @@ func _handle_input(delta : float):
 		return
 	
 	if _is_scoping:
-		if _can_move(_scope.global_position + dir):
-			_scope.global_position += dir
+		if _can_move(_scope.global_position + Vector2(dir)):
+			_scope.global_position += Vector2(dir)
+			_scope_idle_timer = 0.0
+			GameManager.read_scope_data()
 			_is_moving_scope = true
 	else:
-		var target = global_position + Vector2(dir * _tile_size)
+		var target = _player.global_position + Vector2(dir * _tile_size)
+		target = _ground_layer.map_to_local(_ground_layer.local_to_map(target))
 		if _can_move(target):
 			_player.move_player(target)
+			_current_region.player_location = _ground_layer.local_to_map(target)
 		_player.update_player_facing(dir)
 
 # can move
 # returns true if tile could be traversed by the player
 func _can_move(target : Vector2) -> bool:
 	var grid_pos = _ground_layer.local_to_map(target)
-	if not _current_region.is_within_border(grid_pos + _current_region._map_size):
+	if not _current_region.is_within_border(grid_pos):
 		return false
 	
 	if _is_scoping:
@@ -120,6 +126,7 @@ func _toggle_scope():
 	_scope.global_position = _player.global_position
 	_scope.visible = not _scope.visible
 	_player.active = not _scope.visible
+	_is_scoping = _scope.visible
 
 # snap scope
 # finishes scope movement and snaps it to the center of a tile
@@ -165,7 +172,7 @@ func set_up(scene_data : Dictionary):
 	_map = _current_region.get_atlas_map("location")
 	_build_tilemap(_location_layer, _map)
 	
-	_player.teleport_to(_ground_layer.map_to_local(Vector2i(14,14)))
+	_player.teleport_to(_ground_layer.map_to_local(_current_region.player_location))
 
 # set active
 # activates self and the player object
@@ -176,15 +183,25 @@ func set_active(to_active : bool = true):
 # finish move
 # function called when movement reaches a new tile
 func finish_move():
-	_player.finish_move()
+	await get_tree().process_frame
+	
+	# move animation to idle
+	var can_idle := not Input.is_action_pressed("up")
+	can_idle = can_idle and not Input.is_action_pressed("down")
+	can_idle = can_idle and not Input.is_action_pressed("left")
+	can_idle = can_idle and not Input.is_action_pressed("right")
+	_player.finish_move(can_idle)
+	
+	# advance time
 	_steps += 1
 	
 	# try to initiate combat
-	var encounter_chance = _current_region.get_encounter_chance(_player.global_position)
+	var grid_pos = _ground_layer.local_to_map(_player.global_position)
+	var encounter_chance = _current_region.get_encounter_chance(grid_pos)
 	var r = GameManager.random_generator.randf()
 	if r >= encounter_chance:
 		return
-	var battle_data = _current_region.get_data(_player.global_position)
+	var battle_data = _current_region.get_data(grid_pos)
 	battle_data["is_night"] = _is_night_time
 	
 	# check to see if battle will have a surprise round
@@ -201,4 +218,5 @@ func finish_move():
 	battle_data["is_surprise"] = is_surprise
 	
 	# start the battle
+	
 	GameManager.start_battle(battle_data)

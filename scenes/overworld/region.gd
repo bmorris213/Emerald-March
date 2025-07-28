@@ -35,8 +35,10 @@ var _ground_layer : Dictionary
 var _terrain_layer : Dictionary
 var _collision_layer : Dictionary
 var _locations : Dictionary
-var _map_border := Vector2i(12, 9)
 var _map_size : Vector2i
+
+var player_location : Vector2i
+var _starting_location : Vector2i
 
 # Ground Data
 enum GroundType {
@@ -131,7 +133,10 @@ func _init(ground_map : Array, terrain_map : Array\
 		return arg == "1"
 		)
 	for location in locations:
-		self._locations[location.position + _map_border] = location
+		self._locations[location.position] = location
+	
+	_starting_location = Vector2i(0,0)
+	player_location = _starting_location
 
 # get layer
 # returns the layer of cells as a dictionary of vector2i -> data
@@ -140,16 +145,12 @@ func _get_layer(layer_map : Array, conversion_function : Callable) -> Dictionary
 	for i in layer_map.size():
 		for j in layer_map[i].length():
 			var cell = conversion_function.call(layer_map[i][j])
-			layer[Vector2i(j + _map_border.x, i + _map_border.y)] = cell
+			layer[Vector2i(j, i)] = cell
 	return layer
 
 # get cell
 # returns atlas coords for a single cell of the map
 func _get_cell(map_layer : String, grid_pos : Vector2i):
-	# duplicate cells for border
-	if not is_within_border(grid_pos):
-		return _get_cell(map_layer, _get_within_border(grid_pos))
-	
 	# for each layer, retrieve appropriate atlas coords
 	match map_layer:
 		"ground":
@@ -175,34 +176,6 @@ func _get_cell(map_layer : String, grid_pos : Vector2i):
 				return _locations[grid_pos].atlas_coords
 			else:
 				return _EMPTY_ATLAS_COORDS
-
-# get within border
-# retrieve the nearest coords that are within the border from coords that aren't 
-func _get_within_border(init_pos : Vector2i) -> Vector2i:
-	var left_side : int = _map_border.x
-	var right_side : int = _map_size.x + (_map_border.x * 2)
-	var top_side : int = _map_border.y
-	var bottom_side : int = _map_size.y + (_map_border.y * 2)
-	
-	if init_pos.x < left_side:
-		# check corners first
-		if init_pos.y < bottom_side:
-			return Vector2i(left_side + 1, bottom_side - 1)
-		elif init_pos.y > top_side:
-			return Vector2i(left_side + 1, top_side + 1)
-		return Vector2i(left_side + 1, init_pos.y)
-	elif init_pos.x > right_side:
-		# check corners first
-		if init_pos.y < bottom_side:
-			return Vector2i(right_side - 1, bottom_side - 1)
-		elif init_pos.y > top_side:
-			return Vector2i(right_side - 1, top_side + 1)
-		return Vector2i(right_side - 1, init_pos.y)
-	elif init_pos.y < bottom_side:
-		return Vector2i(init_pos.x, bottom_side - 1)
-	elif init_pos.y > top_side:
-		return Vector2i(init_pos.x, top_side + 1)
-	return init_pos
 
 # get speed
 # retrieves the tile movement speed from location details in terms of tiles per second
@@ -256,8 +229,8 @@ func search_tile(grid_pos : Vector2i) -> Dictionary:
 # get encounter chance
 # returns the chance for combat on a target location as a percentage
 func get_encounter_chance(grid_pos : Vector2i) -> float:
-	var ground = get_ground(grid_pos)
-	var terrain = get_terrain(grid_pos)
+	var ground : GroundType = get_ground(grid_pos)
+	var terrain : TerrainType = get_terrain(grid_pos)
 	
 	var ground_danger = _GROUND_DANGER_MULTIPLIERS[ground]
 	var encounter_rate = _TERRAIN_ENCOUNTER_RATES[terrain]
@@ -281,19 +254,19 @@ func get_data(grid_pos : Vector2i) -> Dictionary:
 # is within borders
 # returns true if the position is within the outer limits of the map
 func is_within_border(grid_pos : Vector2i) -> bool:
-	return grid_pos.x >= _map_border.x and\
-	grid_pos.y >= _map_border.y and\
-	grid_pos.x <= (_map_border.x * 2) + _map_size.x and\
-	grid_pos.y <= (_map_border.y * 2) + _map_size.y
+	return grid_pos.x >= 0 and\
+	grid_pos.y >= 0 and\
+	grid_pos.x <= _map_size.x and\
+	grid_pos.y <= _map_size.y
 
 # get atlas_map
 # returns a map of atlas coordinates per tile for each layer
 func get_atlas_map(map_layer : String) -> Array:
 	var map := []
 	
-	for i in _map_size.y + (_map_border.y * 2):
+	for i in _map_size.y:
 		map.append([])
-		for j in _map_size.x + (_map_border.x * 2):
+		for j in _map_size.x:
 			var grid_pos := Vector2i(j, i)
 			map[i].append(_get_cell(map_layer, grid_pos))
 	

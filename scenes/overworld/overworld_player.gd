@@ -58,7 +58,7 @@ func move_player(target : Vector2):
 	_state_machine.travel("Walking")
 
 # teleport to
-# instantly move a player to a target location
+# instantly move a player to the target location
 func teleport_to(target : Vector2):
 	_mover.teleport(target)
 
@@ -76,11 +76,6 @@ func update_player_facing(direction : Vector2i):
 func set_speed(new_speed : float):
 	_mover.move_speed = new_speed
 
-# set center
-# moves the player to the center of tiles
-func set_center(tile_size : int):
-	_mover.teleport(Vector2(tile_size / 2.0, tile_size / 2.0))
-
 # is walking
 # returns whether or not the player is still moving
 func is_walking() -> bool:
@@ -88,6 +83,7 @@ func is_walking() -> bool:
 
 # finish move
 # update is_walking
-func finish_move():
+func finish_move(can_idle : bool):
 	_is_walking = false
-	_state_machine.travel("Idle")
+	if can_idle:
+		_state_machine.travel("Idle")

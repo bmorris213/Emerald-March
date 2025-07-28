@@ -214,12 +214,14 @@ func start_dialogue(lines : Array[Dialogue]):
 # switches to the battle scene for combat
 func start_battle(battle_data : Dictionary):
 	# close any paused menu or dialogue
+	if _game_state == _GameState.dialogue:
+		_global_ui.end_dialogue()
+		_game_state = _previous_states.pop_back()
+		_global_ui.set_dialogue_active(false)
 	if _game_state == _GameState.paused:
 		_global_ui.close_pause_menu()
-		await _switch_state(_previous_states.pop_back())
-	elif _game_state == _GameState.dialogue:
-		_global_ui.end_dialogue()
-		await _switch_state(_previous_states.pop_back())
+		_game_state = _previous_states.pop_back()
+		_global_ui.set_pause_active(false)
 	
 	# get enemies
 	
@@ -234,9 +236,14 @@ func start_battle(battle_data : Dictionary):
 		message = "You are ambushed by enemies!"
 	start_dialogue([Dialogue.new(message_title,message)])
 	
+	# wait until dialogue is now active
+	await get_tree().create_timer(_INTERRUPT_DURATION).timeout
+	
 	# await end of dialogue
 	while _game_state == _GameState.dialogue:
 		await get_tree().process_frame
+	
+	await get_tree().create_timer(_INTERRUPT_DURATION).timeout
 	
 	# start battle
 	_previous_states.push_back(_game_state)
