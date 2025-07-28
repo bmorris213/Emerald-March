@@ -41,8 +41,11 @@ func can_move(_terrain : Region.TerrainType, _ground : Region.GroundType, _colli
 	# validate ground
 	if _ground == Region.GroundType.none or _ground == Region.GroundType.deep_water:
 		return false
-	if _ground == Region.GroundType.shallow_water and not player_has_boat:
-		return false
+	if _ground == Region.GroundType.shallow_water or\
+	_ground == Region.GroundType.river:
+		if _terrain == Region.TerrainType.roads: # bridge
+			return true
+		return player_has_boat
 	
 	# validate collision
 	return not _collision

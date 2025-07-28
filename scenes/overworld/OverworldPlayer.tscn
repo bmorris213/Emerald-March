@@ -218,6 +218,9 @@ hframes = 2
 vframes = 2
 script = ExtResource("2_ve8hu")
 
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2.37, 2.37)
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 "": SubResource("AnimationLibrary_lwilu")
@@ -228,9 +231,6 @@ tree_root = SubResource("AnimationNodeStateMachine_6h7o8")
 anim_player = NodePath("../AnimationPlayer")
 parameters/Idle/blend_position = Vector2(-0.0047695, 0.0212766)
 parameters/Walking/blend_position = Vector2(0, 0)
-
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(2.37, 2.37)
 
 [node name="GridMover" type="Node" parent="."]
 script = ExtResource("2_h8r6n")

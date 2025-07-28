@@ -124,9 +124,16 @@ func _can_move(target : Vector2) -> bool:
 # enable / disables scope
 func _toggle_scope():
 	_scope.global_position = _player.global_position
+	_snap_scope()
+	GameManager.read_scope_data()
+	GameManager.toggle_scope_data_reader()
 	_scope.visible = not _scope.visible
 	_player.active = not _scope.visible
 	_is_scoping = _scope.visible
+	if _is_scoping:
+		_scope.get_child(0).set_current()
+	else:
+		_player.get_child(0).set_current()
 
 # snap scope
 # finishes scope movement and snaps it to the center of a tile

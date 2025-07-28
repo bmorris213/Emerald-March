@@ -46,6 +46,7 @@ enum GroundType {
 	hazardous,
 	dangerous,
 	lethal,
+	river,
 	shallow_water,
 	deep_water,
 	none
@@ -55,6 +56,7 @@ const _GROUND_DANGER_MULTIPLIERS := {
 	GroundType.hazardous: 1.2,
 	GroundType.dangerous: 1.7,
 	GroundType.lethal: 2.0,
+	GroundType.river: 1.2,
 	GroundType.shallow_water: 1.5
 }
 const _GROUND_ATLAS_COORDS := {
@@ -62,6 +64,7 @@ const _GROUND_ATLAS_COORDS := {
 	GroundType.hazardous: Vector2i(0,2),
 	GroundType.dangerous: Vector2i(0,3),
 	GroundType.lethal: Vector2i(0,4),
+	GroundType.river: Vector2i(5,1),
 	GroundType.shallow_water: Vector2i(5,2),
 	GroundType.deep_water: Vector2i(5,3)
 }
@@ -93,12 +96,50 @@ const _TERRAIN_ENCOUNTER_RATES := {
 }
 const _TERRAIN_ATLAS_COORDS := {
 	TerrainType.plains: _EMPTY_ATLAS_COORDS,
+	TerrainType.roads: Vector2i(1,0),
 	TerrainType.wilds: Vector2i(1,1),
 	TerrainType.hills: Vector2i(1,2),
 	TerrainType.woods: Vector2i(1,3),
 	TerrainType.mountains: Vector2i(1,4)
 }
-const _EMPTY_ATLAS_COORDS := Vector2i(5, 1)
+const _EMPTY_ATLAS_COORDS := Vector2i(5, 4)
+
+enum LocationType {
+	unknown,
+	event,
+	npc,
+	treasure,
+	cave,
+	house,
+	town,
+	manor,
+	castle,
+	ruins,
+	wreckage,
+	grave,
+	well,
+	lake,
+	clearing,
+	mountain_path
+}
+const _LOCATION_ATLAS := {
+	LocationType.unknown: Vector2i(2,0),
+	LocationType.event: Vector2i(3,0),
+	LocationType.npc: Vector2i(4,0),
+	LocationType.treasure: Vector2i(5,0),
+	LocationType.cave: Vector2i(2,1),
+	LocationType.house: Vector2i(3,1),
+	LocationType.town: Vector2i(4,1),
+	LocationType.manor: Vector2i(2,2),
+	LocationType.castle: Vector2i(3,2),
+	LocationType.ruins: Vector2i(4,2),
+	LocationType.wreckage: Vector2i(2,3),
+	LocationType.grave: Vector2i(3,3),
+	LocationType.well: Vector2i(4,3),
+	LocationType.lake: Vector2i(2,4),
+	LocationType.clearing: Vector2i(3,4),
+	LocationType.mountain_path: Vector2i(4,4)
+}
 
 # collision data
 const _COLLISION_ATLAS_COORDS := {
@@ -173,7 +214,8 @@ func _get_cell(map_layer : String, grid_pos : Vector2i):
 				return _EMPTY_ATLAS_COORDS
 		"location":
 			if grid_pos in _locations:
-				return _locations[grid_pos].atlas_coords
+				var cell = _locations[grid_pos].type as LocationType
+				return _LOCATION_ATLAS[cell]
 			else:
 				return _EMPTY_ATLAS_COORDS
 
