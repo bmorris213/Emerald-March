@@ -309,3 +309,18 @@ func exit_location():
 # finish player movement
 func end_of_tile():
 	_scene_manager.current_scene.finish_move()
+
+# toggle scope data reader
+# function to enable heads up display of scoping information
+func toggle_scope_data_reader():
+	_global_ui.toggle_scoping()
+
+# update scope title
+# changes the title of the tile scope is looking at
+func update_scope_title(title : String = ""):
+	_global_ui.update_scope_title(title)
+
+# read scope data
+# function which passes data to the heads up for the scope
+func read_scope_data(data : Dictionary = {}):
+	_global_ui.read_scope_data(data)

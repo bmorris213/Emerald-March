@@ -9,7 +9,9 @@ extends Node2D
 
 # control variables
 var active := false
-var _steps := 0
+var _elapsed_time := 0.0
+const _NIGHT_START := 18.0
+const _NIGHT_END := 24.0
 var _is_night_time := false
 var _action_buffered := false
 var _is_scoping := false
@@ -95,6 +97,7 @@ func _handle_input(delta : float):
 		if _can_move(_scope.global_position + Vector2(dir)):
 			_scope.global_position += Vector2(dir)
 			_scope_idle_timer = 0.0
+			GameManager.update_scope_title()
 			GameManager.read_scope_data()
 			_is_moving_scope = true
 	else:
@@ -124,8 +127,10 @@ func _can_move(target : Vector2) -> bool:
 # enable / disables scope
 func _toggle_scope():
 	_scope.global_position = _player.global_position
-	_snap_scope()
+	_scope_idle_timer = 0.0
+	_is_moving_scope = false
 	GameManager.read_scope_data()
+	GameManager.update_scope_title()
 	GameManager.toggle_scope_data_reader()
 	_scope.visible = not _scope.visible
 	_player.active = not _scope.visible
@@ -134,6 +139,7 @@ func _toggle_scope():
 		_scope.get_child(0).set_current()
 	else:
 		_player.get_child(0).set_current()
+	_snap_scope()
 
 # snap scope
 # finishes scope movement and snaps it to the center of a tile
@@ -142,7 +148,7 @@ func _snap_scope():
 	
 	var grid_pos = _ground_layer.local_to_map(_scope.global_position)
 	
-	GameManager.read_scope_data(_current_region.get_data(grid_pos))
+	GameManager.update_scope_title(_current_region.get_title(grid_pos))
 	
 	grid_pos = _ground_layer.map_to_local(grid_pos)
 	grid_pos += Vector2(_tile_size / 2.0, _tile_size / 2.0)
@@ -151,7 +157,51 @@ func _snap_scope():
 # try select
 # attempt to interact with a location
 func _try_select():
-	pass
+	var grid_pos = _ground_layer.local_to_map(_player.global_position)
+	
+	# check for location
+	
+	# exploration feature
+	if _is_scoping:
+		grid_pos = _ground_layer.local_to_map(_scope.global_position)
+		GameManager.read_scope_data(_current_region.get_data(grid_pos))
+	elif _current_region.tile_is_explored(grid_pos):
+		var line := Dialogue.new(
+			_current_region.get_title(grid_pos),
+			"There is nothing here."
+		)
+		GameManager.start_dialogue([line])
+	else:
+		var detail := "Explore the land?\nIt seems like it might be a "
+		var terrain : Region.TerrainType = _current_region.get_terrain(grid_pos)
+		match terrain:
+			Region.TerrainType.roads:
+				detail += "simple enough task..."
+			Region.TerrainType.plains:
+				detail += "somewhat difficult task..."
+			Region.TerrainType.wilds:
+				detail += "somewhat difficult task..."
+			Region.TerrainType.hills:
+				detail += "mighty task..."
+			Region.TerrainType.woods:
+				detail += "mighty task..."
+			Region.TerrainType.mountains:
+				detail += "mighty task..."
+		var line := Dialogue.new(
+			"Explore",
+			detail,
+			{
+				"Don't" : func(): pass,
+				"Explore" : func():
+			_elapsed_time += 3.5 / (_current_region.get_speed(grid_pos) * 2)
+			var result = _current_region.search_tile(grid_pos)
+			var new_line := Dialogue.new(
+				_current_region.get_title(grid_pos),
+				result)
+			print("GameManager.start_dialogue([new_line])")
+			}
+		)
+		GameManager.start_dialogue([line])
 
 # build tilemap
 # constructs a tilemap from map data retrieved from file
@@ -200,12 +250,22 @@ func finish_move():
 	_player.finish_move(can_idle)
 	
 	# advance time
-	_steps += 1
+	var grid_pos = _ground_layer.local_to_map(_player.global_position)
+	_elapsed_time += 1.2 / (_current_region.get_speed(grid_pos) * 2)
+	if _is_night_time:
+		if _elapsed_time >= _NIGHT_END:
+			_is_night_time = false
+			_elapsed_time = 0.0
+			print("become day")
+	elif _elapsed_time >= _NIGHT_START:
+		_is_night_time = true
+		print("become night")
 	
 	# try to initiate combat
-	var grid_pos = _ground_layer.local_to_map(_player.global_position)
 	var encounter_chance = _current_region.get_encounter_chance(grid_pos)
 	var r = GameManager.random_generator.randf()
+	if _is_night_time:
+		encounter_chance += 50.0
 	if r >= encounter_chance:
 		return
 	var battle_data = _current_region.get_data(grid_pos)
@@ -215,7 +275,9 @@ func finish_move():
 	r = GameManager.random_generator.randf()
 	var is_surprise := false
 	var is_ambush := false
-	if r <= encounter_chance:
+	if _is_night_time:
+		is_ambush = true
+	elif r <= encounter_chance:
 		r = GameManager.random_generator.randf()
 		if r <= 0.5 or _is_night_time:
 			is_ambush = true

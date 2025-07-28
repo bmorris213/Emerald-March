@@ -35,6 +35,7 @@ var _ground_layer : Dictionary
 var _terrain_layer : Dictionary
 var _collision_layer : Dictionary
 var _locations : Dictionary
+var _explorations : Array
 var _map_size : Vector2i
 
 var player_location : Vector2i
@@ -176,7 +177,13 @@ func _init(ground_map : Array, terrain_map : Array\
 	for location in locations:
 		self._locations[location.position] = location
 	
-	_starting_location = Vector2i(0,0)
+	_explorations = []
+	for i in _map_size.y:
+		_explorations.append([])
+		for j in _map_size.x:
+			_explorations[i].append(null)
+	
+	_starting_location = Vector2i(1,0)
 	player_location = _starting_location
 
 # get layer
@@ -260,14 +267,6 @@ func get_location(grid_pos : Vector2i) -> Dictionary:
 		return _locations[grid_pos]
 	return {}
 
-# search tile
-# returns tile details resulting from a search
-func search_tile(grid_pos : Vector2i) -> Dictionary:
-	var ground = get_ground(grid_pos)
-	var terrain = get_terrain(grid_pos)
-	
-	return { "ground": ground, "terrain": terrain }
-
 # get encounter chance
 # returns the chance for combat on a target location as a percentage
 func get_encounter_chance(grid_pos : Vector2i) -> float:
@@ -279,18 +278,45 @@ func get_encounter_chance(grid_pos : Vector2i) -> float:
 	
 	return encounter_rate * ground_danger
 
+# tile is explored
+# returns true if the player has explored the tile before
+func tile_is_explored(grid_pos : Vector2i) -> bool:
+	var data = _explorations[grid_pos.y][grid_pos.x]
+	return not data == null
+
+# get explored
+# returns data from exploration stored on the tile
+func get_explored(grid_pos : Vector2i) -> Dictionary:
+	return _explorations[grid_pos.y][grid_pos.x]
+
+# search tile
+# returns loot resulting from a search
+func search_tile(grid_pos : Vector2i) -> String:
+	_explorations[grid_pos.y][grid_pos.x] = get_data(grid_pos)
+	
+	return "You found nothing..."
+
+# get title
+# return the string title of the tile we're looking at
+func get_title(grid_pos : Vector2i) -> String:
+	# empty tiles
+	var data = _explorations[grid_pos.y][grid_pos.x]
+	if data == null:
+		return TerrainType.keys()[data["terrain"]]
+	else:
+		var result = GroundType.keys()[data["ground"]]
+		result += " "
+		result += TerrainType.keys()[data["terrain"]]
+		return result
+
 # get data
 # returns all data at the target position
 func get_data(grid_pos : Vector2i) -> Dictionary:
 	var ground = get_ground(grid_pos)
 	var terrain = get_terrain(grid_pos)
-	var collision = has_collision(grid_pos)
-	var location = get_location(grid_pos)
 	return {
 		"ground" : ground,
-		"terrain" : terrain,
-		"collision" : collision,
-		"location": location
+		"terrain" : terrain
 	}
 
 # is within borders
