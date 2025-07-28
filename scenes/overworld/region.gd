@@ -267,6 +267,11 @@ func get_location(grid_pos : Vector2i) -> Dictionary:
 		return _locations[grid_pos]
 	return {}
 
+# explore location
+# mark a location as having been visited at least once before
+func explore_location(location : Dictionary):
+	_explorations[location["position"].y][location["position"].x] = location
+
 # get encounter chance
 # returns the chance for combat on a target location as a percentage
 func get_encounter_chance(grid_pos : Vector2i) -> float:

@@ -305,6 +305,11 @@ func quit_game():
 func exit_location():
 	_switch_state(_previous_states.pop_back())
 
+# enter location
+# uses location entrance to visit another region or free roam
+func enter_location(location : Dictionary):
+	print(location)
+
 # end of tile
 # finish player movement
 func end_of_tile():

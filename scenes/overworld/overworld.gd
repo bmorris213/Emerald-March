@@ -158,50 +158,75 @@ func _snap_scope():
 # attempt to interact with a location
 func _try_select():
 	var grid_pos = _ground_layer.local_to_map(_player.global_position)
+	var loc = _current_region.get_location(grid_pos)
+	var line : Dialogue
 	
 	# check for location
+	if not loc == {} and not _is_scoping:
+		line = Dialogue.new(
+			loc["key_string"],
+			"Enter the %s?" % [Region.LocationType.keys()[loc["type"]]],
+			{
+				"Don't" : func(): pass,
+				"Enter" : func():
+			if not _current_region.tile_is_explored(grid_pos):
+				_current_region.explore_location(loc)
+			GameManager.enter_location(loc)
+			}
+		)
+		GameManager.start_dialogue([line])
+		return
 	
 	# exploration feature
 	if _is_scoping:
 		grid_pos = _ground_layer.local_to_map(_scope.global_position)
+		
+		loc = _current_region.get_location(grid_pos)
+		
+		if not loc == {}:
+			GameManager.read_scope_data(loc)
+		
 		GameManager.read_scope_data(_current_region.get_data(grid_pos))
-	elif _current_region.tile_is_explored(grid_pos):
-		var line := Dialogue.new(
+		return
+	
+	if _current_region.tile_is_explored(grid_pos):
+		line = Dialogue.new(
 			_current_region.get_title(grid_pos),
 			"There is nothing here."
 		)
 		GameManager.start_dialogue([line])
-	else:
-		var detail := "Explore the land?\nIt seems like it might be a "
-		var terrain : Region.TerrainType = _current_region.get_terrain(grid_pos)
-		match terrain:
-			Region.TerrainType.roads:
-				detail += "simple enough task..."
-			Region.TerrainType.plains:
-				detail += "somewhat difficult task..."
-			Region.TerrainType.wilds:
-				detail += "somewhat difficult task..."
-			Region.TerrainType.hills:
-				detail += "mighty task..."
-			Region.TerrainType.woods:
-				detail += "mighty task..."
-			Region.TerrainType.mountains:
-				detail += "mighty task..."
-		var line := Dialogue.new(
-			"Explore",
-			detail,
-			{
-				"Don't" : func(): pass,
-				"Explore" : func():
-			_elapsed_time += 3.5 / (_current_region.get_speed(grid_pos) * 2)
-			var result = _current_region.search_tile(grid_pos)
-			var new_line := Dialogue.new(
-				_current_region.get_title(grid_pos),
-				result)
-			print("GameManager.start_dialogue([new_line])")
-			}
-		)
-		GameManager.start_dialogue([line])
+		return
+	
+	var detail := "Explore the land?\nIt seems like it might be a "
+	var terrain : Region.TerrainType = _current_region.get_terrain(grid_pos)
+	match terrain:
+		Region.TerrainType.roads:
+			detail += "simple enough task..."
+		Region.TerrainType.plains:
+			detail += "somewhat difficult task..."
+		Region.TerrainType.wilds:
+			detail += "somewhat difficult task..."
+		Region.TerrainType.hills:
+			detail += "mighty task..."
+		Region.TerrainType.woods:
+			detail += "mighty task..."
+		Region.TerrainType.mountains:
+			detail += "mighty task..."
+	line = Dialogue.new(
+		"Explore",
+		detail,
+		{
+			"Don't" : func(): pass,
+			"Explore" : func():
+		_elapsed_time += 3.5 / (_current_region.get_speed(grid_pos) * 2)
+		var result = _current_region.search_tile(grid_pos)
+		line = Dialogue.new(
+			_current_region.get_title(grid_pos),
+			result)
+		print("GameManager.start_dialogue([line])")
+		}
+	)
+	GameManager.start_dialogue([line])
 
 # build tilemap
 # constructs a tilemap from map data retrieved from file

@@ -62,4 +62,8 @@ static func get_region(region_id : Region.RegionID = Region.DEFAULT_REGION) -> D
 			"entrance_id" : 0
 		}
 	]
+	region_map["entrances"] = {
+		0 : Vector2i(1,0),
+		1 : Vector2i(1,7)
+	}
 	return region_map
