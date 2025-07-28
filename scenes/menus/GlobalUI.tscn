@@ -93,15 +93,40 @@ anchors_preset = -1
 anchor_top = 0.85
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = 60.0
 color = Color(0, 0, 0, 1)
 
 [node name="PartyDisplay" type="HBoxContainer" parent="Footer"]
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.15
 anchor_right = 0.85
 anchor_bottom = 1.0
+
+[node name="Descriptions" type="TextureRect" parent="Footer"]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.25
+anchor_top = 0.1
+anchor_right = 0.75
+anchor_bottom = 0.9
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_c4hxk")
+expand_mode = 1
+
+[node name="Descriptions" type="Label" parent="Footer/Descriptions"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "This is a Tool Tip!"
+label_settings = ExtResource("3_dxyhm")
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="QuitWarning" type="Control" parent="."]
 visible = false

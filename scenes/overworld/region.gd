@@ -308,7 +308,20 @@ func get_title(grid_pos : Vector2i) -> String:
 	# empty tiles
 	var data = _explorations[grid_pos.y][grid_pos.x]
 	if data == null:
-		return TerrainType.keys()[data["terrain"]]
+		if grid_pos in _locations:
+			return LocationType.keys()[_locations[grid_pos]["type"]]
+		
+		var ground = get_ground(grid_pos)
+		
+		if ground == GroundType.shallow_water or\
+		ground == GroundType.river or\
+		ground == GroundType.deep_water:
+			return GroundType.keys()[ground]
+		
+		var terrain = get_terrain(grid_pos)
+		return TerrainType.keys()[terrain]
+	elif grid_pos in _locations:
+		return _locations[grid_pos]["key_string"]
 	else:
 		var result = GroundType.keys()[data["ground"]]
 		result += " "
@@ -328,8 +341,8 @@ func get_data(grid_pos : Vector2i) -> Dictionary:
 # is within borders
 # returns true if the position is within the outer limits of the map
 func is_within_border(grid_pos : Vector2i) -> bool:
-	return grid_pos.x >= 0 and\
-	grid_pos.y >= 0 and\
+	return grid_pos.x >= -1 and\
+	grid_pos.y >= -1 and\
 	grid_pos.x <= _map_size.x and\
 	grid_pos.y <= _map_size.y
 

@@ -13,6 +13,7 @@ extends CanvasLayer
 @onready var _header := $Header
 @onready var _footer := $Footer
 @onready var _tool_tip := $Header/ToolTipBox
+@onready var _descriptions := $Footer/Descriptions
 @onready var _pause_menu := $Viewport/PauseMenu
 @onready var _dialogue_box := $Viewport/DialogueBox
 @onready var _idle_popup := $Header/IdlePopup
@@ -29,6 +30,7 @@ func _enable_overlay():
 	_footer.visible = true
 	_header.modulate.a = 1.0
 	_footer.modulate.a = 1.0
+	_party_display.visible = true
 	_update_party_display()
 
 # disable overlay
@@ -38,6 +40,7 @@ func _disable_overlay():
 	_footer.modulate.a = 1.0
 	_header.visible = false
 	_footer.visible = false
+	_party_display.visible = false
 
 # update party display
 # gives information to the party display to provide accurate information
@@ -130,24 +133,6 @@ func set_pause_active(to_active : bool = true):
 func set_dialogue_active(to_active : bool = true):
 	_dialogue_box.active = to_active
 
-# enable tooltips
-# opens the view for tooltips
-func enable_tooltips():
-	_enable_overlay()
-	_tool_tip.visible = true
-
-# set tooltip
-# gives the tooltip something to read out to the player
-func set_tooltip(display : String = ""):
-	_tool_tip.get_child(0).text = display
-
-# disable tooltips
-# close tooltip viewing
-func disable_tooltips():
-	_tool_tip.get_child(0).text = ""
-	_tool_tip.visible = false
-	_disable_overlay()
-
 # open battle
 # give battle manager appropriate data to build itself, disabling any pause otherwise
 func open_battle(battle_data : Dictionary):
@@ -171,3 +156,34 @@ func set_battle_active(to_active : bool = true):
 # menu button use for battle scene
 func toggle_auto_battle():
 	_battle_screen.toggle_auto_battle()
+
+# toggle scoping
+# hide / shows menu for scope gameplay
+func toggle_scoping():
+	if _descriptions.visible:
+		_disable_overlay()
+	else:
+		_enable_overlay()
+	_descriptions.visible = not _descriptions.visible
+	_tool_tip.visible = not _tool_tip.visible
+
+# update scope title
+# displays text for titling scoping resources
+func update_scope_title(title : String = ""):
+	_tool_tip.get_child(0).text = title
+
+# read scope data
+# displays the data from a scope of a resource
+func read_scope_data(data : Dictionary = {}):
+	var display = ""
+	if data == {}:
+		_descriptions.get_child(0).text = display
+		return
+	# data either contains ground and terrain or location
+	for item in data.keys():
+		if not display == "":
+			display += "\n"
+		display += str(item)
+		display += " : "
+		display += str(data[item])
+	_descriptions.get_child(0).text = display

@@ -102,6 +102,8 @@ func _process(delta : float):
 	not _game_state == _GameState.free_roam and\
 	not _game_state == _GameState.dungeon:
 		return
+	if not _scene_manager.current_scene.can_idle:
+		return
 	
 	# toggle idle state
 	if not Input.is_anything_pressed():

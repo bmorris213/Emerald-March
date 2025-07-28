@@ -17,7 +17,8 @@ var _action_buffered := false
 var _is_scoping := false
 var _is_moving_scope := false
 var _scope_idle_timer := 0.0
-const _SCOPE_IDLE_SNAP_DELAY := 0.8
+const _SCOPE_IDLE_SNAP_DELAY := 0.35
+var can_idle := true
 
 # node references
 @onready var _player = $OverworldPlayer
@@ -94,7 +95,8 @@ func _handle_input(delta : float):
 		return
 	
 	if _is_scoping:
-		if _can_move(_scope.global_position + Vector2(dir)):
+		var target = _scope.global_position + (Vector2(dir) * _tile_size)
+		if _can_move(target + Vector2(dir)):
 			_scope.global_position += Vector2(dir)
 			_scope_idle_timer = 0.0
 			GameManager.update_scope_title()
@@ -128,6 +130,7 @@ func _can_move(target : Vector2) -> bool:
 func _toggle_scope():
 	_scope.global_position = _player.global_position
 	_scope_idle_timer = 0.0
+	can_idle = not can_idle
 	_is_moving_scope = false
 	GameManager.read_scope_data()
 	GameManager.update_scope_title()
@@ -136,9 +139,9 @@ func _toggle_scope():
 	_player.active = not _scope.visible
 	_is_scoping = _scope.visible
 	if _is_scoping:
-		_scope.get_child(0).set_current()
+		_scope.get_child(0).make_current()
 	else:
-		_player.get_child(0).set_current()
+		_player.get_child(0).make_current()
 	_snap_scope()
 
 # snap scope
@@ -151,7 +154,6 @@ func _snap_scope():
 	GameManager.update_scope_title(_current_region.get_title(grid_pos))
 	
 	grid_pos = _ground_layer.map_to_local(grid_pos)
-	grid_pos += Vector2(_tile_size / 2.0, _tile_size / 2.0)
 	_scope.global_position = grid_pos
 
 # try select
@@ -185,6 +187,7 @@ func _try_select():
 		
 		if not loc == {}:
 			GameManager.read_scope_data(loc)
+			return
 		
 		GameManager.read_scope_data(_current_region.get_data(grid_pos))
 		return
@@ -219,10 +222,10 @@ func _try_select():
 			"Explore" : func():
 		_elapsed_time += 3.5 / (_current_region.get_speed(grid_pos) * 2)
 		var result = _current_region.search_tile(grid_pos)
-		line = Dialogue.new(
+		var new_line = Dialogue.new(
 			_current_region.get_title(grid_pos),
 			result)
-		GameManager.start_dialogue([line]),
+		GameManager.start_dialogue([new_line]),
 			"Don't" : func(): pass
 		}
 	)
@@ -269,11 +272,11 @@ func finish_move():
 	await get_tree().process_frame
 	
 	# move animation to idle
-	var can_idle := not Input.is_action_pressed("up")
-	can_idle = can_idle and not Input.is_action_pressed("down")
-	can_idle = can_idle and not Input.is_action_pressed("left")
-	can_idle = can_idle and not Input.is_action_pressed("right")
-	_player.finish_move(can_idle)
+	var _can_idle := not Input.is_action_pressed("up")
+	_can_idle = _can_idle and not Input.is_action_pressed("down")
+	_can_idle = _can_idle and not Input.is_action_pressed("left")
+	_can_idle = _can_idle and not Input.is_action_pressed("right")
+	_player.finish_move(_can_idle)
 	
 	# advance time
 	var grid_pos = _ground_layer.local_to_map(_player.global_position)
